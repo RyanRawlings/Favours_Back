@@ -1,0 +1,24 @@
+{
+  "name": "favours_back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node ./main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vickyfu08/Favours_Back.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vickyfu08/Favours_Back/issues"
+  },
+  "homepage": "https://github.com/vickyfu08/Favours_Back#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "proxy": "http://localhost:4000"
+}
