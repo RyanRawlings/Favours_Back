@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node ./main.js"
+    "start": "nodemon main.js"
   },
   "repository": {
     "type": "git",
@@ -18,12 +18,14 @@
   },
   "homepage": "https://github.com/vickyfu08/Favours_Back#readme",
   "dependencies": {
+    "@hapi/joi": "^17.1.1",
     "all": "0.0.0",
     "body-parser": "^1.19.0",
     "cors": "^2.8.5",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "mongoose": "^5.10.7"
+    "mongoose": "^5.10.7",
+    "nodemon": "^2.0.4"
   },
   "proxy": "http://localhost:4000"
 }
