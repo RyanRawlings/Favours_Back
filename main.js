@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const jwt = require('express-jwt');
 require('dotenv/config');
 
 dotenv.config();
@@ -14,8 +15,16 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 
+// app.use(
+//     jwt({
+//       secret: process.env.TOKEN_SECRET,
+//       getToken: req => req.cookies.token,
+//       algorithms: ['RS256']
+//     })
+//   );
+
 //Connect to MongoDB instance
-mongoose.connect(process.env.DB_CONNECTION);
+mongoose.connect(process.env.DB_CONNECTION, { useUnifiedTopology: true, useNewUrlParser: true });
 
 //Import routes - Data
 const getsRoute = require('./routes/gets');
