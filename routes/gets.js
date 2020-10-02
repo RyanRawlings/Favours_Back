@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
+const verify = require('./verifyToken');
+// const User = require('../models/User');
 require('dotenv/config');
 
 //Connection URL
@@ -20,7 +22,8 @@ router.get("/count", (req, res) => {
     });
   });
   
-router.get("/debit_list", (req, res) => {
+router.get("/debit_list", verify, (req, res) => {
+    User.findByOne({_id: req.user});
     MongoClient.connect(url, { useUnifiedTopology: true, useNewUrlParser: true }, function(err, client){
         if(err) {
             console.log("Unsuccessful connection attempt to MongoDB -> fetching the favour debits");
