@@ -9,17 +9,17 @@ const userSchema = new mongoose.Schema({
     firstname: {
         type: String,
         required: true,
-        min: 8
+        min: 1
     },
     middlename: {
         type: String,
         required: false,
-        min: 8
+        min: 1
     },
     lastname: {
         type: String,
         required: true,
-        min: 8
+        min: 1
     },
     email: {
         type: String,
@@ -31,7 +31,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         max: 1024,
-        min: 6
+        min: 8
     },
     date: {
         type: Date,
