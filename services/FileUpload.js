@@ -27,7 +27,7 @@ const upload = multer({
         bucket: 'favours-user-images',
         acl: 'public-read',
         metadata: function (req, file, cb) {
-            cb(null, {fieldName: 'TEST META DATA'});
+            cb(null, {fieldName: file.fieldname, mimeType: file.mimetype});
         },
         key: function (req, file, cb) {
             cb(null, Date.now().toString())

@@ -10,8 +10,8 @@ aws.config.update({
 
 const s3 = new aws.S3();
 
-router.post("/get-s3-image", async (req, res) => {
-    console.log('Get Image Route called successfully...');
+router.post("/delete-s3-image", async (req, res) => {
+    // console.log('Get Image Route called successfully...');
     let errorMessage; // error message for response
 
     req.setTimeout(10 * 1000); // times out after 10secs
@@ -22,14 +22,14 @@ router.post("/get-s3-image", async (req, res) => {
     });
 
     try {
-        console.log(req.body);
+        // console.log(req.body);
         const params = {
             Bucket: 'favours-user-images',
             Key: req.body.key
         }
     
-        s3.getObject(params, function (err, data) {                    
-            console.log('Starting image fetch from s3...');
+        s3.deleteObject(params, function (err, data) {                    
+            // console.log('Starting image fetch from s3...');
             if (data === null || data === undefined) {
                 errorMessage = "Image does not exist on s3...";
             } else {
@@ -39,11 +39,11 @@ router.post("/get-s3-image", async (req, res) => {
                 console.log("Image loaded from s3...");
 
                 if (mimeType === "image/jpeg") {
-                    res.send({data: `data:${mimeType};base64,${base64}`});
+                    res.send(`data:${mimeType};base64,${base64}"`);
                 } else if (mimeType === "image/png") {
-                    res.send({data: `data:${mimeType};base64,${base64}`});
+                    res.send(`data:${mimeType};base64,${base64}"`);
                 } else if (mimeType === "image/gif") {
-                    res.send({data: `data:${mimeType};base64,${base64}`});
+                    res.send(`data:${mimeType};base64,${base64}"`);
                 } else {
                     res.send("Invalid file format")
                 }

@@ -12,10 +12,12 @@ router.post('/image-upload', async function (req, res) {
             return res.status(422).send({errors: [{title: 'File upload error', detail: err.message}]});
         }        
         if (req.file) {
-            return res.json({'imageUrl': req.file.location});
+            // return res.json({'imageUrl': req.file.location});
+            return res.json({'key': req.file.key});
         }
         else {
-            return res.json({'imageUrl': null});
+            // return res.json({'imageUrl': null});
+            return res.json({'key': null});
         }            
     });
 });

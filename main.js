@@ -32,8 +32,11 @@ mongoose.connect(process.env.DB_CONNECTION, { useUnifiedTopology: true, useNewUr
 const getsRoute = require('./routes/gets');
 app.use('/api/get', getsRoute);
 
-const awsS3ImageRoute = require('./routes/get-s3-image');
-app.use('/api/get', awsS3ImageRoute);
+const awsS3GetImageRoute = require('./routes/get-s3-image');
+app.use('/api/get', awsS3GetImageRoute);
+
+const awsS3DeleteImageRoute = require('./routes/delete-s3-image');
+app.use('/api/get', awsS3DeleteImageRoute);
 
 //Import Routes - Authentication
 const authRoute = require('./routes/auth');
