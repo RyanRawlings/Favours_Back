@@ -22,8 +22,8 @@ router.get("/count", (req, res) => {
     });
   });
   
-router.get("/debit_list", verify, (req, res) => {
-    User.findByOne({_id: req.user});
+router.get("/debit_list", (req, res) => {
+    // User.findByOne({_id: req.user});
     MongoClient.connect(url, { useUnifiedTopology: true, useNewUrlParser: true }, function(err, client){
         if(err) {
             console.log("Unsuccessful connection attempt to MongoDB -> fetching the favour debits");
@@ -34,7 +34,7 @@ router.get("/debit_list", verify, (req, res) => {
         let db = client.db(dbName);
         db.collection('favours').find({}).toArray(function(err, result) {
           if(err) throw err;
-          res.json(result);
+          res.json({allFavours: result});
           client.close();
           });
        })

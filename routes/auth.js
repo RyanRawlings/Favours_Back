@@ -50,10 +50,17 @@ router.post('/login', async (req,res) => {
     //Create and assign a token
     const token = jwt.sign({_id: user._id}, process.env.TOKEN_SECRET);
     res.cookie('token', token, { httpOnly: true });
-    res.json(token);
+    res.json({token: token
+              ,user: {
+                        id: user._id,
+                        firstname: user.firstname,
+                        email: user.email,
+                     }
+            });
     
     // res.header('auth-token', token).send(token);    
     console.log('User logged in and token assigned');
+    
 });
 
 module.exports = router;

@@ -13,7 +13,9 @@ dotenv.config();
 //Middleware
 app.use(cors());
 app.use(express.json());
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({
+    extended: true
+ }));
 
 // app.use(
 //     jwt({
@@ -30,11 +32,19 @@ mongoose.connect(process.env.DB_CONNECTION, { useUnifiedTopology: true, useNewUr
 const getsRoute = require('./routes/gets');
 app.use('/api/get', getsRoute);
 
+const awsS3ImageRoute = require('./routes/get-s3-image');
+app.use('/api/get', awsS3ImageRoute);
+
 //Import Routes - Authentication
 const authRoute = require('./routes/auth');
 app.use('/api/user', authRoute);
 
 //Import routes
 //Posts
+const fileRoute = require('./routes/image-upload');
+app.use('/api/file', fileRoute);
+
+const fileUpdateKeyRoute = require('./routes/image-update-key');
+app.use('/api/file', fileUpdateKeyRoute)
 
 app.listen(port, () => console.log(`API running on http://localhost:${port}`));
