@@ -48,6 +48,9 @@ const fileRoute = require('./routes/image-upload');
 app.use('/api/file', fileRoute);
 
 const fileUpdateKeyRoute = require('./routes/image-update-key');
-app.use('/api/file', fileUpdateKeyRoute)
+app.use('/api/file', fileUpdateKeyRoute);
+
+const deleteFavourRoute = require('./routes/delete-favour');
+app.use('/api/favour/', deleteFavourRoute);
 
 app.listen(port, () => console.log(`API running on http://localhost:${port}`));
