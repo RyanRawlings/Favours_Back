@@ -39,8 +39,8 @@ const awsS3DeleteImageRoute = require('./routes/delete-s3-image');
 app.use('/api/get', awsS3DeleteImageRoute);
 
 //Import Routes - Authentication
-const authRoute = require('./routes/auth');
-app.use('/api/user', authRoute);
+// const authRoute = require('./routes/auth');
+// app.use('/api/user', authRoute);
 
 //Import routes
 //Posts

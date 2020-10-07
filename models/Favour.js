@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+var ObjectID = require('mongodb').ObjectID;
 
 const favourSchema = new mongoose.Schema({
   create_time: { type: Date, default: Date.now },
@@ -7,13 +8,14 @@ const favourSchema = new mongoose.Schema({
 
   description: { type: String, required: true, max: 1024, min: 1 },
   owe_items: [{ item: ObjectID, quantity: { type: Number, required: true } }],
-  is_completed: boolean,
+  is_completed: Boolean,
   proofs: {
-    is_uploaded: boolean,
+    is_uploaded: Boolean,
     uploadImageUrl: { type: String, required: true },
     snippet: String
   }
 });
+
 const PublicRequestShema = mongoose.Schema({
   requestUser: { type: ObjectID, requied: true },
   OwingUser: { type: ObjectID, requied: true },
@@ -28,9 +30,9 @@ const PublicRequestShema = mongoose.Schema({
       create_time: { type: Date, default: Date.now }
     }
   ],
-  is_completed: boolean,
+  is_completed: Boolean,
   proofs: {
-    is_uploaded: boolean,
+    is_uploaded: Boolean,
     uploadImageUrl: { type: String, required: true },
     snippet: { type: String, requied: false },
     uploadedBy: ObjectID

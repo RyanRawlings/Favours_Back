@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     max: 1024,
     min: 6
   },
-  group: Schema.Types.ObjectId,
+  group: mongoose.Schema.Types.ObjectId,
   password: {
     type: String,
     required: true,
@@ -40,6 +40,7 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
 const userGroupSchema = new mongoose.Schema({
   group_name: {
     type: String,
@@ -64,5 +65,6 @@ const userGroupSchema = new mongoose.Schema({
     postcode: { type: Number }
   }
 });
+
 module.exports = mongoose.model("User", userSchema);
 module.exports = mongoose.model("UserGroup", userGroupSchema);
