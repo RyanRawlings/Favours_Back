@@ -6,11 +6,11 @@ const userSchema = new mongoose.Schema({
     required: true,
     min: 1
   },
-  middlename: {
-    type: String,
-    required: false,
-    min: 1
-  },
+  // middlename: {
+  //   type: String,
+  //   required: false,
+  //   min: 1
+  // },
   lastname: {
     type: String,
     required: true,
@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
     max: 1024,
     min: 6
   },
-  group: mongoose.Schema.Types.ObjectId,
+  group: { type: mongoose.Schema.Types.ObjectId, ref: "userGroups" },
   password: {
     type: String,
     required: true,
@@ -40,7 +40,6 @@ const userSchema = new mongoose.Schema({
     default: Date.now
   }
 });
-
 
 module.exports = mongoose.model("User", userSchema);
 
