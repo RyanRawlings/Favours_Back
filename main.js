@@ -6,6 +6,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const jwt = require('express-jwt');
+const session = require('express-session');
 require('dotenv/config');
 
 dotenv.config();
@@ -16,6 +17,10 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({
     extended: true
  }));
+app.use(session({ 
+                resave: true,
+                secret: process.env.TOKEN_SECRET,
+                saveUninitialized: true }));
 
 // app.use(
 //     jwt({
@@ -39,8 +44,8 @@ const awsS3DeleteImageRoute = require('./routes/delete-s3-image');
 app.use('/api/get', awsS3DeleteImageRoute);
 
 //Import Routes - Authentication
-// const authRoute = require('./routes/auth');
-// app.use('/api/user', authRoute);
+const authRoute = require('./routes/auth');
+app.use('/api/user', authRoute);
 
 //Import routes
 //Posts
