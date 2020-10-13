@@ -44,6 +44,9 @@ mongoose.connect(process.env.DB_CONNECTION, {
 const getsRoute = require("./routes/gets");
 app.use("/api/get", getsRoute);
 
+const getFavourTypeRoute = require("./routes/get-favourType");
+app.use("/api/get", getFavourTypeRoute);
+
 const awsS3GetImageRoute = require("./routes/get-s3-image");
 app.use("/api/get", awsS3GetImageRoute);
 
@@ -63,7 +66,10 @@ const fileUpdateKeyRoute = require("./routes/image-update-key");
 app.use("/api/file", fileUpdateKeyRoute);
 
 const deleteFavourRoute = require("./routes/delete-favour");
-app.use("/api/favour/", deleteFavourRoute);
+app.use("/api/favour", deleteFavourRoute);
+
+const createPublicRequest = require("./routes/create-publicRequest");
+app.use("/api/favour",createPublicRequest);
 
 app.use("/", indexRouter);
 app.listen(port, () => console.log(`API running on http://localhost:${port}`));
