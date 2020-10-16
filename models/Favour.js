@@ -4,8 +4,7 @@ var ObjectID = require('mongodb').ObjectID;
 const favourSchema = new mongoose.Schema({
   create_time: { type: Date, default: Date.now },
   requestUser: { type: ObjectID, required: true, min: 1 },
-  OwingUser: ObjectID,
-
+  owingUser: ObjectID,
   description: { type: String, required: true, max: 1024, min: 1 },
   owe_items: [{ item: ObjectID, quantity: { type: Number, required: true } }],
   is_completed: Boolean,

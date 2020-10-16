@@ -69,7 +69,13 @@ const deleteFavourRoute = require("./routes/delete-favour");
 app.use("/api/favour", deleteFavourRoute);
 
 const createPublicRequest = require("./routes/create-publicRequest");
-app.use("/api/favour",createPublicRequest);
+app.use("/api/publicRequest", createPublicRequest);
+const getPublicRequestRewards = require("./routes/get-publicRequest-rewards");
+app.use("/api/publicRequest", getPublicRequestRewards);
+const getPublicRequests = require("./routes/get-publicRequest");
+app.use("/api/publicRequest", getPublicRequests);
+const getPublicRequestUserEmails = require("./routes/get-user-emails");
+app.use("/api/publicRequest", getPublicRequestUserEmails);
 
 app.use("/", indexRouter);
 app.listen(port, () => console.log(`API running on http://localhost:${port}`));

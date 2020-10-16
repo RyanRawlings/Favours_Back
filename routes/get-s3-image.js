@@ -5,7 +5,7 @@ const aws = require('aws-sdk');
 aws.config.update({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    region: 'ap-southeast-2'
+    region: 'us-east-2'
 });
 
 const s3 = new aws.S3();
@@ -24,7 +24,7 @@ router.post("/get-s3-image", async (req, res) => {
     try {
         console.log(req.body);
         const params = {
-            Bucket: 'favours-user-images',
+            Bucket: 'favour-request-user-images',
             Key: req.body.key
         }
     

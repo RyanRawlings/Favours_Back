@@ -15,12 +15,18 @@ router.post("/create-publicRequest", async (req, res) => {
     const requestUser = user._id;
 
     // Create Public Request
-    const publicRequest = new PublicRequest({
+    const publicRequest = await PublicRequest.create({
       requestUser: requestUser,
       title: req.body.requestTitle,
       description: req.body.requestTaskDescription,
       rewards: [],
       completed: false,
+      proof: {
+        uploaded: false,
+        uploadImageKey: "",
+        snippet: "",
+        uploadedBy: null
+    }
     });
     
     let rewardsArray = [];
@@ -30,9 +36,11 @@ router.post("/create-publicRequest", async (req, res) => {
       // console.log(req.body.rewards[0].offeredById);
       
       rewardsArray.push({
-            item: mongoose.Types.ObjectId(req.body.rewards[i].rewardId),
+            // item: mongoose.Types.ObjectId(req.body.rewards[i].rewardName),
+            item: req.body.rewards[i].rewardName,
             quantity: req.body.rewards[i].rewardQuantity,
-            providedBy: mongoose.Types.ObjectId(req.body.rewards[i].offeredById)
+            providedBy: mongoose.Types.ObjectId(req.body.rewards[i].offeredById),
+            onModel: "FavourType"
       })
 
       publicRequest.rewards.push(rewardsArray[i]);

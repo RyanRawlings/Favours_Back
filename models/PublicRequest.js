@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const FavourType = require("./FavourType");
 
 const publicRequestSchema = new mongoose.Schema({    
     requestUser: { 
@@ -22,7 +23,8 @@ const publicRequestSchema = new mongoose.Schema({
                     required: true
                 },
     rewards: [{    
-                    item: { type: mongoose.Types.ObjectId },
+                    // item: { type: mongoose.Types.ObjectId },
+                    item: String,
                     quantity: { type: Number },    
                     providedBy: { type: mongoose.Types.ObjectId },    
                     create_time: { type: Date, default: Date.now }    
@@ -35,9 +37,9 @@ const publicRequestSchema = new mongoose.Schema({
                 type: Object,
                 required: false,        
                 uploaded: { type: Boolean },
-                uploadImageUrl: { type: String },
+                uploadImageKey: { type: String },
                 snippet: { type: String },
-                uploadedBy:  { type: Object }    
+                uploadedBy:  { type: Object }   
             }
     
     })
