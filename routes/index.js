@@ -11,4 +11,6 @@ router.post("/api/user/register", api.user.userRegister);
 router.post("/api/user/login", api.user.userLogin);
 router.get("/api/user/profile", api.user.getUserProfile);
 
+//Public Request API
+router.get("/api/publicRequest", api.publicRequest.getPublicRequests);
 module.exports = router;

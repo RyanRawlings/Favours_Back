@@ -90,7 +90,6 @@ exports.userLogin = async (req, res) => {
 };
 
 exports.getUserProfile = async (req, res) => {
-  console.log("1111");
   let result = await UserModel.find({ firstname: "Wei" }).populate({
     path: "group",
     model: "UserGroup"
