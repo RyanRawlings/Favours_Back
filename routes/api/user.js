@@ -31,6 +31,7 @@ const responseJSON = function(res, ret) {
 
 exports.userRegister = async (req, res) => {
   //Validate the data before passing the request to the DB
+  console.log("Data request recieved...",req.body)
   const { error } = registerValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -62,6 +63,7 @@ exports.userRegister = async (req, res) => {
 
 exports.userLogin = async (req, res) => {
   //Validate the data before passing the request to the DB
+  console.log("Data request recieved...",req.body)
   const { error } = loginValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 

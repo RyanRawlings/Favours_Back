@@ -13,4 +13,8 @@ router.get("/api/user/profile", api.user.getUserProfile);
 
 //Public Request API
 router.get("/api/publicRequest", api.publicRequest.getPublicRequests);
+
+//Favour API
+router.post("/api/favour", api.favour.getFavours);
+
 module.exports = router;
