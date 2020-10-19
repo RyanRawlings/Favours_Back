@@ -99,3 +99,20 @@ exports.getUserProfile = async (req, res) => {
 
   responseJSON(res, result);
 };
+
+exports.getUsers = async (req, res) => {
+  console.log("get users is being called");
+  let result = await UserModel.find({});
+
+  // let extractColumn = (arr, column) => arr.map(x => x[column]);
+
+  // let userEmailArray = extractColumn(result, "email" );
+
+  const userEmailArray = [];
+  result.forEach(element => userEmailArray.push({
+    _id: element._id,
+    email: element.email,
+  }));
+
+  responseJSON(res, userEmailArray);
+}

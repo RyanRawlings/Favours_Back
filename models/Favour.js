@@ -6,11 +6,12 @@ const favourSchema = new mongoose.Schema({
   requestUser: { type: ObjectID, required: true, min: 1 },
   owingUser: { type: ObjectID},
   description: { type: String, required: true, max: 1024, min: 1 },
-  owe_items: [{ item: ObjectID, quantity: { type: Number, required: true } }],
+  // owe_items: [{ item: ObjectID}],//, quantity: { type: Number, required: true } }],
+  favourOwed: String,
   is_completed: Boolean,
   proofs: {
     is_uploaded: Boolean,
-    uploadImageUrl: { type: String, required: true },
+    uploadImageUrl: { type: String, required: false },
     snippet: String
   }
 });

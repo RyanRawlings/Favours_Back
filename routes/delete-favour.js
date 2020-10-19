@@ -11,6 +11,7 @@ const url = process.env.DB_CONNECTION;
 const dbName = 'Favours';
   
 router.post("/delete", (req, res) => {
+    console.log("delete favour called")
     // User.findByOne({_id: req.user});
     MongoClient.connect(url, { useUnifiedTopology: true, useNewUrlParser: true }, function(err, client){
         
