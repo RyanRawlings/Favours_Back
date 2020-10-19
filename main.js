@@ -59,8 +59,8 @@ app.use('/api/user', authRoute);
 
 //Import routes
 //Posts
-const fileRoute = require("./routes/image-upload");
-app.use("/api/file", fileRoute);
+// const fileRoute = require("./routes/image-upload");
+// app.use("/api/file", fileRoute);
 
 const fileUpdateKeyRoute = require("./routes/image-update-key");
 app.use("/api/file", fileUpdateKeyRoute);
@@ -77,5 +77,7 @@ app.use("/api/publicRequest", getPublicRequests);
 const getPublicRequestUserEmails = require("./routes/get-user-emails");
 app.use("/api/publicRequest", getPublicRequestUserEmails);
 
+
 app.use("/", indexRouter);
+
 app.listen(port, () => console.log(`API running on http://localhost:${port}`));

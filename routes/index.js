@@ -22,4 +22,8 @@ router.post("/api/publicRequest/delete", api.publicRequest.deletePublicRequest);
 router.post("/api/favour/get", api.favour.getFavours);
 router.post("/api/favour/create", api.favour.createFavour);
 
+// Image API
+router.post("/api/image/upload", api.awsS3.uploadS3Images);
+router.post("/api/image/update/mongo", api.favour.storeImageData);
+
 module.exports = router;

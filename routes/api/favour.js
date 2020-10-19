@@ -96,4 +96,36 @@ exports.getFavours = async (req, res) => {
     responseJSON(res, bothArrays);
 };
 
+exports.storeImageData = async (req, res) => {
+  console.log(req.body);
+  try {
+        let type = req.body[req.body.length-1].type;
+        console.log(type);
 
+        if (type === "Repay") {
+          for (let i = 0; i < req.body.length - 1; i++) {
+            let filter = { _id: mongoose.Types.ObjectId(req.body[i]._id) };
+            let update = { $set: {
+                                    is_completed: true, 
+                                    proofs: {
+                                              is_uploaded: true,
+                                              uploadImageUrl: req.body[i].imageUrl,
+                                              snippet: ""
+                                            }
+                                  }
+                          };
+            
+            let doc = await FavourModel.findOneAndUpdate(filter, update, {
+              new: true
+            });
+            console.log(doc);
+          }                   
+        }
+
+        responseJSON(res, "Processing complete.");
+      } catch (error) {
+        res.send({ message: "There was an error processing the image updates" + error });
+      }
+  
+
+};
