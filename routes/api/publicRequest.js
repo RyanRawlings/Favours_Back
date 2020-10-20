@@ -47,7 +47,6 @@ exports.getPublicRequests = async (req, res) => {
   responseJSON(res, result);
 };
 
-
 exports.createPublicRequest = async (req, res) => {
   console.log("Create public request started...");
   // console.log(req.body);
@@ -55,7 +54,7 @@ exports.createPublicRequest = async (req, res) => {
 
   // Get the document relating to the requesting user
   const user = await UserModel.findOne({ email: req.body.requestedBy });
-  
+
   // Store UserId in separate variable from retrieved document
   const requestUser = user._id;
 
@@ -71,25 +70,25 @@ exports.createPublicRequest = async (req, res) => {
       uploadImageKey: "",
       snippet: "",
       uploadedBy: null
-  }
+    }
   });
-  
+
   let rewardsArray = [];
   for (let i = 0; i < req.body.rewards.length; i++) {
     console.log("Post creation child push start...");
     // console.log(req.body.rewards[0].rewardId);
     // console.log(req.body.rewards[0].offeredById);
-    
+
     rewardsArray.push({
-          // item: mongoose.Types.ObjectId(req.body.rewards[i].rewardName),
-          item: req.body.rewards[i].rewardName,
-          quantity: req.body.rewards[i].rewardQuantity,
-          providedBy: mongoose.Types.ObjectId(req.body.rewards[i].offeredById),
-          onModel: "FavourType"
-    })
+      // item: mongoose.Types.ObjectId(req.body.rewards[i].rewardName),
+      item: req.body.rewards[i].rewardName,
+      quantity: req.body.rewards[i].rewardQuantity,
+      providedBy: mongoose.Types.ObjectId(req.body.rewards[i].offeredById),
+      onModel: "FavourType"
+    });
 
     publicRequest.rewards.push(rewardsArray[i]);
-  }  
+  }
 
   try {
     const savedPublicRequest = await publicRequest.save();
@@ -102,15 +101,41 @@ exports.createPublicRequest = async (req, res) => {
 };
 
 exports.deletePublicRequest = async (req, res) => {
-  console.log("delete favour called")
+  console.log("delete favour called");
   // User.findByOne({_id: req.user});
   const idToDelete = req.body._id;
 
-  PublicRequestsModel.deleteOne(idToDelete, function (err) {
+  PublicRequestsModel.deleteOne(idToDelete, function(err) {
     if (err) {
-      res.send({message: "There was an error deleting the public request " + err});
+      res.send({
+        message: "There was an error deleting the public request " + err
+      });
     } else {
-      res.send({message: "Successfully deleted public request"})
+      res.send({ message: "Successfully deleted public request" });
     }
-  });  
-}
+  });
+};
+
+exports.addReward = async (req, res) => {
+  console.log("add reward called");
+  console.log("reward query", req.body);
+  const idToUpdate = req.body._id;
+  mongoose.set("useFindAndModify", false);
+  let data = await PublicRequestsModel.findByIdAndUpdate(
+    idToUpdate,
+    {
+      $set: { rewards: req.body.newReward }
+    },
+    function(err) {
+      if (err) {
+        res.send({
+          message: "There was an error adding the public request " + err
+        });
+      }
+    }
+  );
+
+  res.json({ message: "Successfully adding public request", data: data });
+
+  console.log(data);
+};

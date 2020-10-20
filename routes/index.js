@@ -17,7 +17,7 @@ router.get("/api/user/get", api.user.getUsers);
 router.get("/api/publicRequest/get", api.publicRequest.getPublicRequests);
 router.post("/api/publicRequest/create", api.publicRequest.createPublicRequest);
 router.post("/api/publicRequest/delete", api.publicRequest.deletePublicRequest);
-
+router.post("/api/publicRequest/add-reward", api.publicRequest.addReward);
 //Favour API
 router.post("/api/favour/get", api.favour.getFavours);
 router.post("/api/favour/create", api.favour.createFavour);
