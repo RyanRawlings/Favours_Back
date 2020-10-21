@@ -13,4 +13,4 @@ yarn-debug.log*
 yarn-error.log*
 
 # Hide dotenv file
-./env
+.env
