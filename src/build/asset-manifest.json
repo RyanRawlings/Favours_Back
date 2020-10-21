@@ -1,0 +1,24 @@
+{
+  "files": {
+    "main.css": "/static/css/main.0045e5ef.chunk.css",
+    "main.js": "/static/js/main.e8b22273.chunk.js",
+    "main.js.map": "/static/js/main.e8b22273.chunk.js.map",
+    "runtime-main.js": "/static/js/runtime-main.25801cac.js",
+    "runtime-main.js.map": "/static/js/runtime-main.25801cac.js.map",
+    "static/js/2.7efe2d83.chunk.js": "/static/js/2.7efe2d83.chunk.js",
+    "static/js/2.7efe2d83.chunk.js.map": "/static/js/2.7efe2d83.chunk.js.map",
+    "index.html": "/index.html",
+    "precache-manifest.350561c9b40bc906ae553096bc0e0508.js": "/precache-manifest.350561c9b40bc906ae553096bc0e0508.js",
+    "service-worker.js": "/service-worker.js",
+    "static/css/main.0045e5ef.chunk.css.map": "/static/css/main.0045e5ef.chunk.css.map",
+    "static/js/2.7efe2d83.chunk.js.LICENSE.txt": "/static/js/2.7efe2d83.chunk.js.LICENSE.txt",
+    "static/media/hero-image-people-cartoon-tb.png": "/static/media/hero-image-people-cartoon-tb.feb71cfb.png",
+    "static/media/uts-hero-image.png": "/static/media/uts-hero-image.df66f48c.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.25801cac.js",
+    "static/js/2.7efe2d83.chunk.js",
+    "static/css/main.0045e5ef.chunk.css",
+    "static/js/main.e8b22273.chunk.js"
+  ]
+}
