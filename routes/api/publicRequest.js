@@ -104,8 +104,9 @@ exports.deletePublicRequest = async (req, res) => {
   console.log("delete favour called");
   // User.findByOne({_id: req.user});
   const idToDelete = req.body._id;
+  mongoose.set("useFindAndModify", false);
 
-  PublicRequestsModel.deleteOne(idToDelete, function(err) {
+  PublicRequestsModel.findByIdAndDelete(idToDelete, function(err) {
     if (err) {
       res.send({
         message: "There was an error deleting the public request " + err
