@@ -9,6 +9,7 @@ const favourSchema = new mongoose.Schema({
   // owe_items: [{ item: ObjectID}],//, quantity: { type: Number, required: true } }],
   favourOwed: String,
   is_completed: Boolean,
+  debt_forgiven: Boolean,
   proofs: {
     is_uploaded: Boolean,
     uploadImageUrl: { type: String, required: false },

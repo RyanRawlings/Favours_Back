@@ -9,6 +9,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../../validation");
 const welcomeEmail = require("../api/email").welcomeEmail;
+const mongoose = require("mongoose");
 // const User = require('../models/User');
 require("dotenv/config");
 
@@ -69,7 +70,7 @@ exports.userRegister = async (req, res) => {
 exports.userLogin = async (req, res) => {
   //Validate the data before passing the request to the DB
   console.log("Data request recieved...",req.body);
-  
+
   const { error } = loginValidation(req.body);
   if (error) return res.send({message: error.details[0].message});
 
@@ -89,7 +90,8 @@ exports.userLogin = async (req, res) => {
     user: {
       id: user._id,
       firstname: user.firstname,
-      email: user.email
+      email: user.email,
+      groups: user.groups
     }
   });
 
@@ -122,4 +124,90 @@ exports.getUsers = async (req, res) => {
   }));
 
   responseJSON(res, userEmailArray);
+}
+
+exports.getUserGroups = async (req, res) => {
+  console.log("get user groups is being called");
+
+  const userId = req.body.userId;
+
+  const filter = { _id: mongoose.Types.ObjectId(userId) };
+
+  const result = await UserModel.findOne(filter);
+
+  await result.populate('groups')
+              .execPopulate()
+              .then(resultDocument => {
+                console.log(resultDocument.groups);
+                responseJSON(res, resultDocument.groups);
+              })
+              .catch(error => {
+                console.log(error);
+                res.send("Error occurred");
+              });
+}
+
+exports.getGroupUsers = async (req, res) => {
+  console.log("get group users is being called");
+    
+    // console.log(req.body);
+    let extractColumn = (arr, column) => arr.map(x => x[column]);
+
+    const groups = req.body.groups;
+
+    let groupArrays = [];
+
+    groups.forEach(element => groupArrays.push({
+        _id: element._id,
+        group_name: element.group_name
+    }))
+
+    for (let i = 0; i < groupArrays.length; i++) {
+      const result = await UserModel.find({
+                                            groups: {
+                                                     $in: groupArrays[i]._id
+                                      }});
+      if (result) {
+        const userEmails = extractColumn(result, 'email');
+
+        groupArrays[i]['users'] = userEmails;
+
+      }                                      
+    }
+
+    // const result = await UserModel.find(filter);
+
+    // let groupUsersEmailArray = extractColumn(result, "email" );
+
+    if (groupArrays) {
+      console.log(groupArrays)
+      responseJSON(res, groupArrays);
+    }
+  // } catch (err) {
+  //   res.send({ message: err })
+  // }
+}
+
+exports.getUser = async (req, res) => {
+  console.log("get user is being called");
+  // console.log(req.body);
+  let result = await UserModel.findOne(req.body);
+  
+  console.log(result);
+  
+  if (result) {
+    console.log("success")
+    responseJSON(res, result);
+  } else {
+    responseJSON(res, { message: "Error getting user details" });
+  }
+}
+
+exports.userLeaderboard = async (req, res) => {
+  let userEmails = await UserModel.aggregate([
+    { $project: { email: 1 } }
+  ]);
+
+  console.log(userEmails);
+  // responseJSON(res,result);
 }

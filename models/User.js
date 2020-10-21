@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("./UserGroup");
 
 const userSchema = new mongoose.Schema({
   firstname: {
@@ -24,7 +25,7 @@ const userSchema = new mongoose.Schema({
     max: 1024,
     min: 6
   },
-  group: { type: mongoose.Schema.Types.ObjectId, ref: "userGroups" },
+  groups: [{ type: mongoose.Schema.Types.ObjectId, ref: "UserGroup" }],
   password: {
     type: String,
     required: true,
@@ -41,5 +42,5 @@ const userSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model("User", userSchema);
+module.exports = mongoose.model("User", userSchema, "users");
 

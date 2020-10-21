@@ -11,6 +11,7 @@ const UserGroupModel = require("../../models/UserGroup.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../../validation");
+const { response } = require("express");
 // const User = require('../models/User');
 require("dotenv/config");
 
@@ -44,6 +45,7 @@ exports.createFavour = async (req, res) => {
     description: req.body.description,
     favourOwed: req.body.favourOwed,
     is_completed: false,
+    debt_forgiven: false,
     proofs: {
       is_uploaded: false,
       uploadImageUrl: null,
@@ -77,19 +79,24 @@ exports.getFavours = async (req, res) => {
 
     let creditArray = [];
     let debitArray = [];
+    let forgivenArray = [];
     let bothArrays = [];
     
     if (result) {
         // console.log(userId,result[0].requestUser,mongoose.Types.ObjectId(result[0].requestUser).equals(mongoose.Types.ObjectId(userId)))
         for (let i = 0; i < result.length; i++) {
-            if (mongoose.Types.ObjectId(result[i].requestUser).equals(mongoose.Types.ObjectId(userId))) {
-                debitArray.push(result[i]);
-            } else if (mongoose.Types.ObjectId(result[i].owingUser).equals(mongoose.Types.ObjectId(userId))) {
+          if (result[i].debt_forgiven === true) {
+            forgivenArray.push(result[i])
+          } else {
+            if (mongoose.Types.ObjectId(result[i].owingUser).equals(mongoose.Types.ObjectId(userId))) {
+              debitArray.push(result[i]);
+            } else if (mongoose.Types.ObjectId(result[i].requestUser).equals(mongoose.Types.ObjectId(userId))) {
                 creditArray.push(result[i]);
             }
+          }
         }
     
-        bothArrays = [{ credits: creditArray }, { debits: debitArray }];
+        bothArrays = [{ credits: creditArray }, { debits: debitArray }, { forgivenFavours: forgivenArray}];
     }
 
     console.log("result", bothArrays);
@@ -126,6 +133,18 @@ exports.storeImageData = async (req, res) => {
       } catch (error) {
         res.send({ message: "There was an error processing the image updates" + error });
       }
+};
+
+exports.forgiveDebt = async (req, res) => {
   
+  try {
+    let filter = { _id: mongoose.Types.ObjectId(req.body._id) };
+    let update = { $set: { debt_forgiven: true, is_completed: true } };
+    const response = await FavourModel.findOneAndUpdate(filter, update);
+
+    responseJSON(res, response);
+  } catch (error) {
+    responseJSON(res, { message: error})
+  }
 
 };

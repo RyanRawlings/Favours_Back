@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require("./User");
 
 const userGroupSchema = new mongoose.Schema({
     group_name: {
@@ -25,4 +26,4 @@ const userGroupSchema = new mongoose.Schema({
     }
   });
 
-  module.exports = mongoose.model("UserGroup", userGroupSchema);
+  module.exports = mongoose.model("UserGroup", userGroupSchema, "userGroups");

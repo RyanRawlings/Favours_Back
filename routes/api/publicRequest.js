@@ -86,7 +86,8 @@ exports.createPublicRequest = async (req, res) => {
       providedBy: mongoose.Types.ObjectId(req.body.rewards[i].offeredById),
       onModel: "FavourType"
     });
-
+    
+    console.log("this is new reward is offered by: ", mongoose.Types.ObjectId(req.body.rewards[i].offeredById))
     publicRequest.rewards.push(rewardsArray[i]);
   }
 

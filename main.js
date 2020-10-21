@@ -9,6 +9,7 @@ const jwt = require('express-jwt');
 const session = require('express-session');
 require('dotenv/config');
 
+
 dotenv.config();
 
 //whole route
@@ -37,7 +38,8 @@ app.use(session({
 //Connect to MongoDB instance
 mongoose.connect(process.env.DB_CONNECTION, {
   useUnifiedTopology: true,
-  useNewUrlParser: true
+  useNewUrlParser: true,
+  useFindAndModify: false,
 });
 
 //Import routes - Data
