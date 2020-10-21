@@ -32,6 +32,11 @@
     "mongoose": "^5.10.7",
     "multer": "^1.4.2",
     "multer-s3": "^2.9.0",
+<<<<<<< HEAD
+=======
+    "nodemailer": "^6.4.14",
+    "nodemon": "^2.0.4",
+>>>>>>> e781bbdcc2c1453fa8fca0a7888a93d246bd01fa
     "require-all": "^3.0.0"
   },
   "devDependencies": {

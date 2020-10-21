@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-const upload = require('../services/FileUpload');
+const upload = require('../../services/FileUpload');
 
 const fileUpload = upload.array('image', 10);
 
@@ -26,7 +26,7 @@ exports.uploadS3Images = async (req, res) => {
                 const images = [];
                 for (let i = 0; i < fileArray.length; i++) {
                     fileLocation = fileArray[i].location;
-                    console.log('filenm', fileLocation);
+                    console.log('filename', fileLocation);
                     images.push(fileLocation)
                 }
                 // Save the file name into database
@@ -66,4 +66,4 @@ exports.uploadS3Images = async (req, res) => {
     // });
 // });
 
-module.exports = router;
+// module.exports = router;

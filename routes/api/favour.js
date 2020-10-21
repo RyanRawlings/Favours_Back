@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const assert = require("assert");
 const verify = require("../verifyToken");
 const UserModel = require("../../models/User.js");
-const Favour = require("../../models/Favour.js");
+const FavourModel = require("../../models/Favour.js");
 const UserGroupModel = require("../../models/UserGroup.js");
 
 const bcrypt = require("bcryptjs");
@@ -32,7 +32,38 @@ const responseJSON = function(res, ret) {
   }
 };
 
+exports.createFavour = async (req, res) => {
+  console.log("Create favour started...");
+  // console.log(req.body);
+  // console.log(req.body.rewards);
+
+  // Create Public Request
+  const favour = await FavourModel.create({
+    requestUser: req.body.requestUser,
+    owingUser: req.body.owingUser,
+    description: req.body.description,
+    favourOwed: req.body.favourOwed,
+    is_completed: false,
+    proofs: {
+      is_uploaded: false,
+      uploadImageUrl: null,
+      snippet: ""
+    }
+  });
+
+  try {
+    const savedFavour = await favour.save();
+    // console.log(savedFavour);
+    res.send({ message: "Successfully created Favour", success: true });
+    
+  } catch (err) {
+    res.status(400).send({ message: "Error creating Favour", success: false});
+    // console.log(err);
+  }
+};
+
 exports.getFavours = async (req, res) => {
+    console.log(req.body);
 
     const userId = req.body.userId;
     const query = {
@@ -42,7 +73,7 @@ exports.getFavours = async (req, res) => {
         ]
     }
 
-    let result = await Favour.find().or(query);
+    let result = await FavourModel.find().or(query);
 
     let creditArray = [];
     let debitArray = [];
@@ -63,4 +94,38 @@ exports.getFavours = async (req, res) => {
 
     console.log("result", bothArrays);
     responseJSON(res, bothArrays);
+};
+
+exports.storeImageData = async (req, res) => {
+  console.log(req.body);
+  try {
+        let type = req.body[req.body.length-1].type;
+        console.log(type);
+
+        if (type === "Repay") {
+          for (let i = 0; i < req.body.length - 1; i++) {
+            let filter = { _id: mongoose.Types.ObjectId(req.body[i]._id) };
+            let update = { $set: {
+                                    is_completed: true, 
+                                    proofs: {
+                                              is_uploaded: true,
+                                              uploadImageUrl: req.body[i].imageUrl,
+                                              snippet: ""
+                                            }
+                                  }
+                          };
+            
+            let doc = await FavourModel.findOneAndUpdate(filter, update, {
+              new: true
+            });
+            console.log(doc);
+          }                   
+        }
+
+        responseJSON(res, "Processing complete.");
+      } catch (error) {
+        res.send({ message: "There was an error processing the image updates" + error });
+      }
+  
+
 };

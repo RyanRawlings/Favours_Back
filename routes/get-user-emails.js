@@ -10,7 +10,7 @@ const dbName = "Favours";
 
 router.post("/get-user-emails", async (req, res) => {
 
-    // console.log(req.body);
+    console.log("Request data: ", req.body);
 
     const userIdList = [];
     const tempUserIdList = req.body;
@@ -19,6 +19,8 @@ router.post("/get-user-emails", async (req, res) => {
     for (let i = 0; i < tempUserIdList.length; i++) {
         userIdList.push(mongoose.Types.ObjectId(req.body[i]));
     }
+
+    console.log("UserId List: ", userIdList);
     
     // Connect to MongoDb
     MongoClient.connect(
@@ -36,14 +38,16 @@ router.post("/get-user-emails", async (req, res) => {
             );
 
             // Filter search on user collection passing the sanitised user Ids
+
             let db = client.db(dbName);
             db.collection("users")
                 .find({ _id: { $in: userIdList }})
-                .toArray(function(err, result) {
-            
-            if (err) throw err;
-            
+                .toArray(function(err, result) {      
+            if (err) {
+              throw err;
+            } else {
             // Create new smaller array
+            console.log("result", result);
             let userArray = [];
             for (let i = 0; i < result.length; i++) {
                 userArray.push({    
@@ -52,10 +56,11 @@ router.post("/get-user-emails", async (req, res) => {
                 email: result[i].email,
                     });
                 }
-
+                console.log('userArray', userArray);
                 res.send(userArray);
 
                 client.close();
+            }
             });
           }
         }
