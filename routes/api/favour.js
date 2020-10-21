@@ -56,7 +56,7 @@ exports.createFavour = async (req, res) => {
   try {
     const savedFavour = await favour.save();
     // console.log(savedFavour);
-    res.send({ message: "Successfully created Favour", success: true });
+    res.send({ message: "Successfully created Favour", success: true, _id: savedFavour._id });
     
   } catch (err) {
     res.status(400).send({ message: "Error creating Favour", success: false});
@@ -127,6 +127,24 @@ exports.storeImageData = async (req, res) => {
             });
             console.log(doc);
           }                   
+        } else if (type === "Record") {
+          for (let i = 0; i < req.body.length - 1; i++) {
+            let filter = { _id: mongoose.Types.ObjectId(req.body[i]._id) };
+            let update = { $set: {
+                                    is_completed: false, 
+                                    proofs: {
+                                              is_uploaded: true,
+                                              uploadImageUrl: req.body[i].imageUrl,
+                                              snippet: ""
+                                            }
+                                  }
+                          };
+            
+            let doc = await FavourModel.findOneAndUpdate(filter, update, {
+              new: true
+            });
+            console.log(doc);
+          }                  
         }
 
         responseJSON(res, "Processing complete.");

@@ -18,6 +18,9 @@ router.post("/api/user/get-one", api.user.getUser);
 router.post("/api/user/groups", api.user.getUserGroups);
 router.post("/api/user/group-users", api.user.getGroupUsers);
 
+// router.post("/api/user/forgot-password", api.user.forgotPassword);
+// router.post("/api/user/reset-password", api.user.resetPassword);
+
 //Public Request API
 router.get("/api/publicRequest/get", api.publicRequest.getPublicRequests);
 router.post("/api/publicRequest/create", api.publicRequest.createPublicRequest);

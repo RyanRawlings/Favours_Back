@@ -1,13 +1,18 @@
+const fs = require('fs');
 const express = require("express");
+const app = express();
 const router = express.Router();
 const MongoClient = require("mongodb").MongoClient;
 const assert = require("assert");
 const verify = require("../verifyToken");
 const UserModel = require("../../models/User.js");
 const UserGroupModel = require("../../models/UserGroup.js");
+const FavourModel = require("../../models/Favour.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../../validation");
+const sortObjectsArray = require('sort-objects-array');
+
 const welcomeEmail = require("../api/email").welcomeEmail;
 const mongoose = require("mongoose");
 // const User = require('../models/User');
@@ -204,10 +209,127 @@ exports.getUser = async (req, res) => {
 }
 
 exports.userLeaderboard = async (req, res) => {
-  let userEmails = await UserModel.aggregate([
-    { $project: { email: 1 } }
-  ]);
 
-  console.log(userEmails);
-  // responseJSON(res,result);
+  try {
+    let users = await UserModel.aggregate([
+      { $project: { email: 1, firstname: 1, lastname: 1 } }
+    ]);
+  
+    // let favourCount = await FavourModel.find();
+  
+    let leaderboardArray = [];
+    for (let i = 0; i < users.length; i++) {
+      let requestUser = users[i]._id;
+      let owingUser = users[i]._id;
+  
+      let favourCredits = await FavourModel.countDocuments({ 
+        requestUser: requestUser
+      });
+  
+      let favourDebits = await FavourModel.countDocuments({ 
+        owingUser: owingUser
+      });
+  
+      let favoursForgiven = await FavourModel.countDocuments({ 
+        $and: [
+                {
+                  $or: [{ requestUser: requestUser }, { owingUser: owingUser }]
+                },
+                {
+                  debt_forgiven: true
+                }
+              ]
+      });
+  
+      leaderboardArray.push({ id: i + 1, _id: users[i]._id, user: users[i].firstname + " " + users[i].lastname.substring(1, 0), favoursForgiven: favoursForgiven, favourCredits: favourCredits, favourDebits: favourDebits });
+    }
+    
+    const leaderboard = sortObjectsArray(leaderboardArray, "favoursForgiven", "desc");  
+  
+    responseJSON(res,leaderboard);
+  } catch (err) {
+    responseJSON(res, err);
+  }
+  
 }
+
+// exports.forgotPassword = async (req, res) => {
+//     const email = req.body.email;
+
+//     UserModel.findOne({email: email}, (err, user) => {
+//       if (err || !user) {
+//         return res.status(400).json({message: "Email does not exist" });        
+//       }
+
+//       const token = jwt.sign({_id: user._id}, process.env.RESET_PASSWORD_KEY, {expiresIn: "20m"});
+//       const emailData = {
+//         from: "noreply@favours.com.au",
+//         to: email,
+//         subject: "Password Reset Link",
+//         html: `
+//         <h2>Please click on given link to reset your password</h2>
+//         <p>${process.env.CLIENT_URL}/authentication/password-reset/${token}</p>
+//         `  
+//     };    
+//     return user.updateOne({resetLink: token}, (err, success) => {
+//       if (err) {
+//         return res.status(400).json({message: "Reset password link error" });        
+//       } else {
+
+//       }
+
+//     })
+// }
+
+// const forgot = require('password-reset')({
+//   uri : 'http://localhost:4000/password_reset',
+//   from : 'password-reset@favours.com.au',
+//   host : 'localhost', port : 25,
+// });
+
+// app.use(forgot.middleware);
+
+// exports.forgotPassword = async (req, res) => {
+//   const email = req.body.email;
+
+//   // Check if email exists
+//   const user = await UserModel.findOne({ email: email });
+//   if (!user) return res.send({ message: "Email is not found"});
+
+//   //Email found send reset
+//   const reset = forgot(email, function (err) {
+//     if (err) res.end('Error sending message: ' + err)
+//     else res.end('Check your inbox for a password reset message.')
+//   });
+
+//   reset.on('request', function (req_, res_) {
+//     req_.session.reset = { email : email, id : reset.id };
+//     fs.createReadStream(__dirname + '/forgot.html').pipe(res_);
+//   });
+// }
+
+// exports.resetPassword = async (req, res) => {
+//     const email = req.body.email;
+//     const password = req.body.password;
+//     const confirm = req.body.confirm;
+
+//     if (password !== confirm) return res.end("Passwords do not match");
+//     if (password.length < 8) return res.end("Password must be at least 8 characters");
+
+//     //Hash passwords
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     //Set hashed password in db
+//     const update = await UserModel.findOneAndUpdate({ email: email }, { password: hashedPassword }).exec(function(err, user) {
+//       if(err) {
+//         res.status(500).send(err);
+//       } else {
+//         res.status(200).send({ message: "Successfully reset password"});
+//       }
+//     });
+
+//     forgot.expire(req.session.reset.id);
+//     delete req.session.reset;
+//     res.end('password reset');
+// };
