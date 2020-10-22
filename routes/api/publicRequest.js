@@ -86,8 +86,11 @@ exports.createPublicRequest = async (req, res) => {
       providedBy: mongoose.Types.ObjectId(req.body.rewards[i].offeredById),
       onModel: "FavourType"
     });
-    
-    console.log("this is new reward is offered by: ", mongoose.Types.ObjectId(req.body.rewards[i].offeredById))
+
+    console.log(
+      "this is new reward is offered by: ",
+      mongoose.Types.ObjectId(req.body.rewards[i].offeredById)
+    );
     publicRequest.rewards.push(rewardsArray[i]);
   }
 
@@ -140,4 +143,48 @@ exports.addReward = async (req, res) => {
   res.json({ message: "Successfully adding public request", data: data });
 
   console.log(data);
+};
+
+exports.claimPublicRequest = async (req, res) => {
+  console.log("claimPublicRequest called");
+  console.log("reward query", req.body);
+  const idToClaim = req.body._id;
+  mongoose.set("useFindAndModify", false);
+  //delete request
+  PublicRequestsModel.findByIdAndDelete(idToClaim, function(err) {
+    if (err) {
+      res.send({
+        message: "There was an error deleting the public request " + err
+      });
+    } else {
+      res.send({ message: "Successfully deleted public request" });
+    }
+  });
+  // create favour
+  const favour = await FavourModel.create({
+    requestUser: req.body.requestUser,
+    owingUser: req.body.owingUser,
+    description: req.body.description,
+    favourOwed: req.body.favourOwed,
+    is_completed: false,
+    debt_forgiven: false,
+    proofs: {
+      is_uploaded: false,
+      uploadImageUrl: null,
+      snippet: ""
+    }
+  });
+
+  try {
+    const savedFavour = await favour.save();
+    console.log(savedFavour);
+    res.send({ message: "Successfully created Favour", success: true });
+  } catch (err) {
+    res.status(400).send({ message: "Error creating Favour", success: false });
+    // console.log(err);
+  }
+
+  //res.json({ message: "Successfully adding public request", data: data });
+
+  //console.log(data);
 };
