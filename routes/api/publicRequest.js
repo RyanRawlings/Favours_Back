@@ -154,8 +154,8 @@ exports.claimPublicRequest = async (req, res) => {
   const newFavour = [];
   req.body.map((item, index) => {
     newFavour.push({
-      requestUser: item.requestUser,
-      owingUser: item.owingUser,
+      requestUser: item.owingUser,
+      owingUser: item.requestUser,
       description: item.description,
       favourOwed: item.favourOwed,
       is_completed: false,
