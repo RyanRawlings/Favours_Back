@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
-var ObjectID = require('mongodb').ObjectID;
+var ObjectID = require("mongodb").ObjectID;
 
 const favourSchema = new mongoose.Schema({
   create_time: { type: Date, default: Date.now },
-  requestUser: { type: ObjectID, required: true, min: 1 },
-  owingUser: { type: ObjectID},
-  description: { type: String, required: true, max: 1024, min: 1 },
+  requestUser: { type: ObjectID, required: true },
+  owingUser: { type: ObjectID },
+  description: { type: String, required: true },
   // owe_items: [{ item: ObjectID}],//, quantity: { type: Number, required: true } }],
   favourOwed: String,
   is_completed: Boolean,

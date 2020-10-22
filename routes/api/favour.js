@@ -179,16 +179,18 @@ exports.storeImageData = async (req, res) => {
         let doc = await PublicRequestsModel.findOneAndUpdate(filter, update, {
           new: true
         });
-        console.log(doc);
+        console.log("doc", doc);
       }
     }
 
-    let doc = await FavourModel.findOneAndUpdate(filter, update, {
-      new: true
-    });
-    console.log(doc);
+    // let doc = await FavourModel.findOneAndUpdate(filter, update, {
+    //   new: true
+    // });
+    // console.log(doc);
 
-    responseJSON(res, "Processing complete.");
+    // responseJSON(res, doc);
+    res.send(doc);
+    console.log("res1111 is :", res);
   } catch (error) {
     res.send({
       message: "There was an error processing the image updates" + error

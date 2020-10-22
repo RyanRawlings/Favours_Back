@@ -5,6 +5,8 @@ const assert = require("assert");
 const verify = require("../verifyToken");
 const UserModel = require("../../models/User.js");
 const PublicRequestsModel = require("../../models/PublicRequest");
+const FavourModel = require("../../models/Favour.js");
+
 const UserGroupModel = require("../../models/UserGroup.js");
 const mongoose = require("mongoose");
 
@@ -148,43 +150,27 @@ exports.addReward = async (req, res) => {
 exports.claimPublicRequest = async (req, res) => {
   console.log("claimPublicRequest called");
   console.log("reward query", req.body);
-  const idToClaim = req.body._id;
-  mongoose.set("useFindAndModify", false);
-  //delete request
-  PublicRequestsModel.findByIdAndDelete(idToClaim, function(err) {
-    if (err) {
-      res.send({
-        message: "There was an error deleting the public request " + err
-      });
-    } else {
-      res.send({ message: "Successfully deleted public request" });
-    }
+
+  const newFavour = [];
+  req.body.map((item, index) => {
+    newFavour.push({
+      requestUser: item.requestUser,
+      owingUser: item.owingUser,
+      description: item.description,
+      favourOwed: item.favourOwed,
+      is_completed: false,
+      debt_forgiven: false,
+      proofs: {
+        is_uploaded: false,
+        uploadImageUrl: null,
+        snippet: ""
+      }
+    });
   });
+  console.log("favour111:", newFavour);
   // create favour
-  const favour = await FavourModel.create({
-    requestUser: req.body.requestUser,
-    owingUser: req.body.owingUser,
-    description: req.body.description,
-    favourOwed: req.body.favourOwed,
-    is_completed: false,
-    debt_forgiven: false,
-    proofs: {
-      is_uploaded: false,
-      uploadImageUrl: null,
-      snippet: ""
-    }
-  });
 
-  try {
-    const savedFavour = await favour.save();
-    console.log(savedFavour);
-    res.send({ message: "Successfully created Favour", success: true });
-  } catch (err) {
-    res.status(400).send({ message: "Error creating Favour", success: false });
-    // console.log(err);
-  }
+  const favour = await FavourModel.create(newFavour);
 
-  //res.json({ message: "Successfully adding public request", data: data });
-
-  //console.log(data);
+  await db.collection("favours").insert(favour);
 };
