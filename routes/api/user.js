@@ -7,11 +7,13 @@ const assert = require("assert");
 const verify = require("../verifyToken");
 const UserModel = require("../../models/User.js");
 const UserGroupModel = require("../../models/UserGroup.js");
+const UserActivityModel = require("../../models/UserActivity.js");
 const FavourModel = require("../../models/Favour.js");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../../validation");
 const sortObjectsArray = require('sort-objects-array');
+// const sortObjectArray = require('objectarray-sort');
 
 const welcomeEmail = require("../api/email").welcomeEmail;
 const mongoose = require("mongoose");
@@ -66,7 +68,7 @@ exports.userRegister = async (req, res) => {
   try {
     const savedUser = await user.save();
     res.send({ user: user._id });
-    welcomeEmail(userData);
+    // welcomeEmail(userData);
   } catch (err) {
     res.status(400).send(err);
   }
@@ -105,13 +107,35 @@ exports.userLogin = async (req, res) => {
   console.log("User logged in and token assigned");
 };
 
+exports.updateUserProfileImage = async (req, res) => {
+  // console.log("response from client: " + req.body._id + req.body.imageUrl);
+  const userId = mongoose.Types.ObjectId(req.body._id);
+  const profileImageUrl = req.body.imageUrl;
+
+  const filter = { _id: userId };
+  const update = { profileImageUrl: profileImageUrl }
+
+  const user = await UserModel.findOneAndUpdate(filter, update);
+  // const user = await UserModel.findOneAndUpdate({_id: userId }, { imageUrl: imageUrl }, {
+  //   new: true
+  // });
+
+  if (user) {
+    console.log(user);
+    return responseJSON(res, { message: "Successfully uploaded image" });
+  } else {
+    return responseJSON(res, { message: "Error in uploading image" });
+  }
+  
+};
+
 exports.getUserProfile = async (req, res) => {
   let result = await UserModel.find({ firstname: "Wei" }).populate({
     path: "group",
     model: "UserGroup"
   });
 
-  responseJSON(res, result);
+  return responseJSON(res, result);
 };
 
 exports.getUsers = async (req, res) => {
@@ -195,16 +219,12 @@ exports.getGroupUsers = async (req, res) => {
 
 exports.getUser = async (req, res) => {
   console.log("get user is being called");
+  console.log(req.body);
   // console.log(req.body);
   let result = await UserModel.findOne(req.body);
   
-  console.log(result);
-  
   if (result) {
-    console.log("success")
-    responseJSON(res, result);
-  } else {
-    responseJSON(res, { message: "Error getting user details" });
+    res.send(result);
   }
 }
 
@@ -245,12 +265,90 @@ exports.userLeaderboard = async (req, res) => {
     }
     
     const leaderboard = sortObjectsArray(leaderboardArray, "favoursForgiven", "desc");  
-  
+    // const leaderboard = sortObjectArray(leaderboardArray, ["favoursForgiven", "favoursDebits"], ["desc", "desc"])
+    console.log(leaderboard);
+
     responseJSON(res,leaderboard);
   } catch (err) {
     responseJSON(res, err);
   }
   
+}
+
+exports.partyDetection = async (req, res) => {
+  const userId = mongoose.Types.ObjectId(req.body._id);
+
+  let extractColumn = (arr, column) => arr.map(x => x[column]);
+
+  let debitsArray = [];
+  let creditsArray = [];
+  let userFavours = await FavourModel.find({ $or: [{ requestUser: userId }, { owingUser: userId }]});
+  
+  if (userFavours) {
+    // console.log(userFavours)
+    for (let i = 0; i < userFavours.length; i++) {
+      if ( userFavours[i].requestUser !== userId && userFavours[i].is_forgiven !== true && userFavours[i].is_completed !== true) {
+        console.log("request user: ", userFavours[i].requestUser)
+        debitsArray.push({ 
+          userId: userFavours[i].owingUser,
+          favourType: userFavours[i].favourOwed,          
+        });
+        }
+
+    if ( userFavours[i].requestUser === userId && userFavours[i].is_forgiven !== true && userFavours[i].is_completed !== true ) {
+      console.log("owing user: ", userFavours[i].owingUser)
+      creditsArray.push({ 
+          userId: userFavours[i].owingUser,
+          favourType: userFavours[i].favourOwed,
+        });
+      }
+    }
+
+    console.log(debitsArray, creditsArray);
+
+  }
+}
+
+exports.createUserActivity = async (req, res) => {
+  console.log(req.body);
+  // console.log(req.body);
+  const userId = req.body.userId;
+  const action = req.body.action;
+
+  const user = await UserModel.findOne({ _id: userId });
+  if (!user) return res.send({ message: "User could not be found" });    
+
+  const userActivity = new UserActivityModel({
+      userId: userId,
+      action: action,
+      time: new Date(),
+    });
+
+    try {
+      const savedUserActivity = await userActivity.save();
+      return res.send({ message: "Success" });
+      // welcomeEmail(userData);
+    } catch (err) {
+      return res.send(err);
+    }
+
+}
+
+exports.getUserActivity = async (req, res) => {
+  const userId = req.body._id;
+  // console.log(userId);
+  const user = await UserModel.findOne({ _id: userId });
+
+  if (user) {
+    const userActivity = await UserActivityModel.find({ userId: userId });
+
+    if (userActivity) {
+      responseJSON(res, userActivity);
+    }
+  }
+  // } else {
+  //   res.send({ message: "Error retriving activity"});
+  // }
 }
 
 // exports.forgotPassword = async (req, res) => {

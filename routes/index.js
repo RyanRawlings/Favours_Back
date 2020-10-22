@@ -17,9 +17,15 @@ router.post("/api/user/get-one", api.user.getUser);
 
 router.post("/api/user/groups", api.user.getUserGroups);
 router.post("/api/user/group-users", api.user.getGroupUsers);
+router.post("/api/user/upload-profile-image", api.user.updateUserProfileImage)
 
 // router.post("/api/user/forgot-password", api.user.forgotPassword);
 // router.post("/api/user/reset-password", api.user.resetPassword);
+
+router.post("/api/user/get/activity", api.user.getUserActivity);
+router.post("/api/user/create/activity", api.user.createUserActivity);
+
+router.post("/api/user/party-detection", api.user.partyDetection);
 
 //Public Request API
 router.get("/api/publicRequest/get", api.publicRequest.getPublicRequests);

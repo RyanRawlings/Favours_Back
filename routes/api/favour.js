@@ -56,11 +56,13 @@ exports.createFavour = async (req, res) => {
   try {
     const savedFavour = await favour.save();
     // console.log(savedFavour);
-    res.send({
-      message: "Successfully created Favour",
-      success: true,
-      _id: savedFavour._id
+    res.send({ 
+        message: "Successfully created Favour", 
+        success: true,
+        _id: savedFavour._id,
+        favourOwed: savedFavour.favourOwed 
     });
+    
   } catch (err) {
     res.status(400).send({ message: "Error creating Favour", success: false });
     // console.log(err);

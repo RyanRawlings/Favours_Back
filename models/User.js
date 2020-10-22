@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
     required: true,
     min: 1
   },
-  profileImageKey: { type: String, required: false },
+  profileImageUrl: { type: String, required: false },
 
   email: {
     type: String,
