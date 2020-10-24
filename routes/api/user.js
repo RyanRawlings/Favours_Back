@@ -276,36 +276,44 @@ exports.userLeaderboard = async (req, res) => {
 }
 
 exports.partyDetection = async (req, res) => {
+  console.log("Party detection called...");
+  console.log(req.body);
   const userId = mongoose.Types.ObjectId(req.body._id);
 
   let extractColumn = (arr, column) => arr.map(x => x[column]);
 
-  let debitsArray = [];
-  let creditsArray = [];
   let userFavours = await FavourModel.find({ $or: [{ requestUser: userId }, { owingUser: userId }]});
   
   if (userFavours) {
     // console.log(userFavours)
-    for (let i = 0; i < userFavours.length; i++) {
-      if ( userFavours[i].requestUser !== userId && userFavours[i].is_forgiven !== true && userFavours[i].is_completed !== true) {
-        console.log("request user: ", userFavours[i].requestUser)
-        debitsArray.push({ 
-          userId: userFavours[i].owingUser,
-          favourType: userFavours[i].favourOwed,          
-        });
-        }
+    
+    const requestUsers = extractColumn(userFavours, "requestUser");
+    const owingUsers = extractColumn(userFavours, "owingUser");
+    const userList = requestUsers.concat(owingUsers);
+    
+    let userArray = [];
+    let finalUserArray = [];
+    for (let i = 0; i < requestUsers.length; i++) {
+      if (!userArray.includes(requestUsers[i].toString())) {
+        userArray.push(requestUsers[i].toString());
+      }
 
-    if ( userFavours[i].requestUser === userId && userFavours[i].is_forgiven !== true && userFavours[i].is_completed !== true ) {
-      console.log("owing user: ", userFavours[i].owingUser)
-      creditsArray.push({ 
-          userId: userFavours[i].owingUser,
-          favourType: userFavours[i].favourOwed,
-        });
+      if (!userArray.includes(owingUsers[i].toString())) {
+        userArray.push(owingUsers[i].toString());
       }
     }
 
-    console.log(debitsArray, creditsArray);
+    for (let i = 0; i < userArray.length; i++) {
+      if (userArray[i] !== userId.toString()) {
+        finalUserArray.push(userArray[i]);
+      }
+    }
+    
+    const userEmails = await UserModel.find({_id: { $in: finalUserArray }});
 
+    const partyDetection = extractColumn(userEmails, "email")
+    
+    res.send(partyDetection);    
   }
 }
 
