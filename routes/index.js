@@ -10,7 +10,6 @@ const api = require("require-all")({
 //User API
 router.post("/api/user/register", api.user.userRegister);
 router.post("/api/user/login", api.user.userLogin);
-router.get("/api/user/profile", api.user.getUserProfile);
 router.get("/api/user/get", api.user.getUsers);
 router.get("/api/user/get-leaderboard", api.user.userLeaderboard);
 router.post("/api/user/get-one", api.user.getUser);
@@ -18,9 +17,6 @@ router.post("/api/user/get-one", api.user.getUser);
 router.post("/api/user/groups", api.user.getUserGroups);
 router.post("/api/user/group-users", api.user.getGroupUsers);
 router.post("/api/user/upload-profile-image", api.user.updateUserProfileImage)
-
-// router.post("/api/user/forgot-password", api.user.forgotPassword);
-// router.post("/api/user/reset-password", api.user.resetPassword);
 
 router.post("/api/user/get/activity", api.user.getUserActivity);
 router.post("/api/user/create/activity", api.user.createUserActivity);

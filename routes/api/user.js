@@ -13,11 +13,9 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../../validation");
 const sortObjectsArray = require('sort-objects-array');
-// const sortObjectArray = require('objectarray-sort');
-
-const welcomeEmail = require("../api/email").welcomeEmail;
 const mongoose = require("mongoose");
-// const User = require('../models/User');
+const { graphqlHTTP } = require('express-graphql');
+const { buildSchema } = require('graphql');
 require("dotenv/config");
 
 //Connection URL
@@ -38,21 +36,30 @@ const responseJSON = function(res, ret) {
   }
 };
 
-exports.userRegister = async (req, res) => {
-  //Validate the data before passing the request to the DB
+/*******************************************************************************************
+ * Returns user id on success or 400 status on error
+ * 
+ * @param {array} req contains firstname, lastname, email, password of the new user
+ * @param {array} res response 
+ * @return {array} response -> user id or status 400 error
+ *
+ *******************************************************************************************/
+
+exports.userRegister = async (req, res) => {  
+  // Validate the data before passing the request to the DB
   console.log("Data request recieved...",req.body)
   const { error } = registerValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
-  //Check if email already exists
+  // Check if email already exists
   const emailExists = await UserModel.findOne({ email: req.body.email });
   if (emailExists) return res.status(400).send("Email exists already!");
 
-  //Hash passwords
+  // Hash passwords
   const salt = await bcrypt.genSalt(10);
   const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-  //Create new user
+  // Create new user data
   const userData = {
     firstname: req.body.firstname,
     middlename: req.body.middlename,
@@ -68,30 +75,38 @@ exports.userRegister = async (req, res) => {
   try {
     const savedUser = await user.save();
     res.send({ user: user._id });
-    // welcomeEmail(userData);
   } catch (err) {
     res.status(400).send(err);
   }
 };
 
+/*************************************************************************************************
+ * Returns jwt token and user details to be updated in UserContext and stored in Cookies client side
+ * 
+ * @param {array} req contains email and password string of user trying to log in
+ * @param {array} res response 
+ * @return {array} response -> contains array containing user details and jwt token. 
+ * 
+ *************************************************************************************************/
+
 exports.userLogin = async (req, res) => {
-  //Validate the data before passing the request to the DB
+  // Validate the data before passing the request to the DB
   console.log("Data request recieved...",req.body);
 
   const { error } = loginValidation(req.body);
   if (error) return res.send({message: error.details[0].message});
 
-  //Check if email exists
+  // Check if email exists
   const user = await UserModel.findOne({ email: req.body.email });
   if (!user) return res.send({ message: "Email is not found"});
 
-  //Password is correct
+  // Check password is correct
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword) return res.send({message: "Invalid password"});
 
-  //Create and assign a token
+  // Create sign token
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-  res.cookie("token", token, { httpOnly: true });
+  // res.cookie("token", token, { httpOnly: true });
   res.json({
     token: token,
     user: {
@@ -107,8 +122,16 @@ exports.userLogin = async (req, res) => {
   console.log("User logged in and token assigned");
 };
 
+/****************************************************************************************************
+ * Returns a success status message indicating whether the database update completed successfully
+ * 
+ * @param {array} req contains the userId and aws imageUrl
+ * @param {array} res response 
+ * @return {array} response message -> success status
+ * 
+ ****************************************************************************************************/
+
 exports.updateUserProfileImage = async (req, res) => {
-  // console.log("response from client: " + req.body._id + req.body.imageUrl);
   const userId = mongoose.Types.ObjectId(req.body._id);
   const profileImageUrl = req.body.imageUrl;
 
@@ -116,9 +139,6 @@ exports.updateUserProfileImage = async (req, res) => {
   const update = { profileImageUrl: profileImageUrl }
 
   const user = await UserModel.findOneAndUpdate(filter, update);
-  // const user = await UserModel.findOneAndUpdate({_id: userId }, { imageUrl: imageUrl }, {
-  //   new: true
-  // });
 
   if (user) {
     console.log(user);
@@ -129,22 +149,18 @@ exports.updateUserProfileImage = async (req, res) => {
   
 };
 
-exports.getUserProfile = async (req, res) => {
-  let result = await UserModel.find({ firstname: "Wei" }).populate({
-    path: "group",
-    model: "UserGroup"
-  });
-
-  return responseJSON(res, result);
-};
+/***************************************************************************************************************
+ * Returns an array of all users
+ * 
+ * @param {array} req unused
+ * @param {array} res response 
+ * @return {array} userEmailArray -> returns an array of object arrays that contain the userId and userEmail
+ * 
+ ***************************************************************************************************************/
 
 exports.getUsers = async (req, res) => {
   console.log("get users is being called");
   let result = await UserModel.find({});
-
-  // let extractColumn = (arr, column) => arr.map(x => x[column]);
-
-  // let userEmailArray = extractColumn(result, "email" );
 
   const userEmailArray = [];
   result.forEach(element => userEmailArray.push({
@@ -154,6 +170,15 @@ exports.getUsers = async (req, res) => {
 
   responseJSON(res, userEmailArray);
 }
+
+/*******************************************************************************************************************
+ * Returns an array of object arrays pertaining to each of the groups the active user is a part of
+ * 
+ * @param {array} req contains the id of the active user
+ * @param {array} res response 
+ * @return {array} resultDocument.groups -> returns the nested group documents that have been populated with the relevant group data
+ * 
+ *******************************************************************************************************************/
 
 exports.getUserGroups = async (req, res) => {
   console.log("get user groups is being called");
@@ -176,10 +201,16 @@ exports.getUserGroups = async (req, res) => {
               });
 }
 
+/***************************************************************************************************
+ * Returns an array of arrays containing all the users for each groupId in the request 
+ * 
+ * @param {array} req contains an array of groupIds in the body
+ * @param {array} res response 
+ * @return {array} groupArrays -> information about the user account
+ * 
+ ***************************************************************************************************/
+
 exports.getGroupUsers = async (req, res) => {
-  console.log("get group users is being called");
-    
-    // console.log(req.body);
     let extractColumn = (arr, column) => arr.map(x => x[column]);
 
     const groups = req.body.groups;
@@ -204,23 +235,22 @@ exports.getGroupUsers = async (req, res) => {
       }                                      
     }
 
-    // const result = await UserModel.find(filter);
-
-    // let groupUsersEmailArray = extractColumn(result, "email" );
-
     if (groupArrays) {
       console.log(groupArrays)
       responseJSON(res, groupArrays);
     }
-  // } catch (err) {
-  //   res.send({ message: err })
-  // }
 }
 
+/***************************************************************************************
+ * Returns an object array about the active user account
+ * 
+ * @param {array} req contains the userId of the active user
+ * @param {array} res response 
+ * @return {array} result -> information about the user account
+ * 
+ **************************************************************************************/
+
 exports.getUser = async (req, res) => {
-  console.log("get user is being called");
-  console.log(req.body);
-  // console.log(req.body);
   let result = await UserModel.findOne(req.body);
   
   if (result) {
@@ -228,14 +258,20 @@ exports.getUser = async (req, res) => {
   }
 }
 
-exports.userLeaderboard = async (req, res) => {
+/******************************************************************************************************************
+ * Returns an array of user emails that the user should join a party with
+ * 
+ * @param {array} req unused parameter
+ * @param {array} res response
+ * @return {array} leaderboard -> leaderboard data in the form of object array is sent back to requester
+ * 
+ ******************************************************************************************************************/
 
+exports.userLeaderboard = async (req, res) => {
   try {
     let users = await UserModel.aggregate([
       { $project: { email: 1, firstname: 1, lastname: 1 } }
     ]);
-  
-    // let favourCount = await FavourModel.find();
   
     let leaderboardArray = [];
     for (let i = 0; i < users.length; i++) {
@@ -264,20 +300,25 @@ exports.userLeaderboard = async (req, res) => {
       leaderboardArray.push({ id: i + 1, _id: users[i]._id, user: users[i].firstname + " " + users[i].lastname.substring(1, 0), favoursForgiven: favoursForgiven, favourCredits: favourCredits, favourDebits: favourDebits });
     }
     
-    const leaderboard = sortObjectsArray(leaderboardArray, "favoursForgiven", "desc");  
-    // const leaderboard = sortObjectArray(leaderboardArray, ["favoursForgiven", "favoursDebits"], ["desc", "desc"])
-    console.log(leaderboard);
+    const leaderboard = sortObjectsArray(leaderboardArray, "favoursForgiven", "desc");
 
     responseJSON(res,leaderboard);
+
   } catch (err) {
     responseJSON(res, err);
   }
   
 }
 
+/******************************************************************************************************************
+ * Returns an array of user emails that the user should join a party with
+ * 
+ * @param {array} req contains userId of the active user
+ * @return {array} partyDetection an array of user emails, the active user should join a party with
+ * 
+ ******************************************************************************************************************/
+
 exports.partyDetection = async (req, res) => {
-  console.log("Party detection called...");
-  console.log(req.body);
   const userId = mongoose.Types.ObjectId(req.body._id);
 
   let extractColumn = (arr, column) => arr.map(x => x[column]);
@@ -285,11 +326,9 @@ exports.partyDetection = async (req, res) => {
   let userFavours = await FavourModel.find({ $or: [{ requestUser: userId }, { owingUser: userId }]});
   
   if (userFavours) {
-    // console.log(userFavours)
     
     const requestUsers = extractColumn(userFavours, "requestUser");
     const owingUsers = extractColumn(userFavours, "owingUser");
-    const userList = requestUsers.concat(owingUsers);
     
     let userArray = [];
     let finalUserArray = [];
@@ -317,9 +356,15 @@ exports.partyDetection = async (req, res) => {
   }
 }
 
+/**********************************************************************************************************
+ * Returns a success message whether the new activity was written to the database
+ * 
+ * @param {array} req contains userId and the action performed
+ * @return {string} success status message sent back to requester
+ * 
+ **********************************************************************************************************/
+
 exports.createUserActivity = async (req, res) => {
-  console.log(req.body);
-  // console.log(req.body);
   const userId = req.body.userId;
   const action = req.body.action;
 
@@ -342,9 +387,16 @@ exports.createUserActivity = async (req, res) => {
 
 }
 
+/*************************************************************************************************************
+ * Returns an array of user activity unordered
+ * 
+ * @param {array} req the object id of the current user
+ * @return {array} userActivity array of the userActivity details
+ * 
+ *************************************************************************************************************/
+
 exports.getUserActivity = async (req, res) => {
   const userId = req.body._id;
-  // console.log(userId);
   const user = await UserModel.findOne({ _id: userId });
 
   if (user) {
@@ -354,88 +406,4 @@ exports.getUserActivity = async (req, res) => {
       responseJSON(res, userActivity);
     }
   }
-  // } else {
-  //   res.send({ message: "Error retriving activity"});
-  // }
 }
-
-// exports.forgotPassword = async (req, res) => {
-//     const email = req.body.email;
-
-//     UserModel.findOne({email: email}, (err, user) => {
-//       if (err || !user) {
-//         return res.status(400).json({message: "Email does not exist" });        
-//       }
-
-//       const token = jwt.sign({_id: user._id}, process.env.RESET_PASSWORD_KEY, {expiresIn: "20m"});
-//       const emailData = {
-//         from: "noreply@favours.com.au",
-//         to: email,
-//         subject: "Password Reset Link",
-//         html: `
-//         <h2>Please click on given link to reset your password</h2>
-//         <p>${process.env.CLIENT_URL}/authentication/password-reset/${token}</p>
-//         `  
-//     };    
-//     return user.updateOne({resetLink: token}, (err, success) => {
-//       if (err) {
-//         return res.status(400).json({message: "Reset password link error" });        
-//       } else {
-
-//       }
-
-//     })
-// }
-
-// const forgot = require('password-reset')({
-//   uri : 'http://localhost:4000/password_reset',
-//   from : 'password-reset@favours.com.au',
-//   host : 'localhost', port : 25,
-// });
-
-// app.use(forgot.middleware);
-
-// exports.forgotPassword = async (req, res) => {
-//   const email = req.body.email;
-
-//   // Check if email exists
-//   const user = await UserModel.findOne({ email: email });
-//   if (!user) return res.send({ message: "Email is not found"});
-
-//   //Email found send reset
-//   const reset = forgot(email, function (err) {
-//     if (err) res.end('Error sending message: ' + err)
-//     else res.end('Check your inbox for a password reset message.')
-//   });
-
-//   reset.on('request', function (req_, res_) {
-//     req_.session.reset = { email : email, id : reset.id };
-//     fs.createReadStream(__dirname + '/forgot.html').pipe(res_);
-//   });
-// }
-
-// exports.resetPassword = async (req, res) => {
-//     const email = req.body.email;
-//     const password = req.body.password;
-//     const confirm = req.body.confirm;
-
-//     if (password !== confirm) return res.end("Passwords do not match");
-//     if (password.length < 8) return res.end("Password must be at least 8 characters");
-
-//     //Hash passwords
-//     const salt = await bcrypt.genSalt(10);
-//     const hashedPassword = await bcrypt.hash(password, salt);
-
-//     //Set hashed password in db
-//     const update = await UserModel.findOneAndUpdate({ email: email }, { password: hashedPassword }).exec(function(err, user) {
-//       if(err) {
-//         res.status(500).send(err);
-//       } else {
-//         res.status(200).send({ message: "Successfully reset password"});
-//       }
-//     });
-
-//     forgot.expire(req.session.reset.id);
-//     delete req.session.reset;
-//     res.end('password reset');
-// };
