@@ -28,7 +28,6 @@ router.post("/delete", (req, res) => {
 
         db.collection('favours').findOneAndDelete({_id: deleteId} , function(err, result) {
           if(err) throw err;
-        //   console.log(result);
           res.send(result.ok === 1? { ok: true, message: "Successfully deleted"} : {ok: false, message: err});
           client.close();
           });

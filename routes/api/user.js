@@ -65,16 +65,19 @@ exports.userRegister = async (req, res) => {
     middlename: req.body.middlename,
     lastname: req.body.lastname,
     email: req.body.email,
+    profileImageUrl: "",
+    groups: [mongoose.Types.ObjectId('5f83f0665f368aca8798e1ec')],
     password: hashedPassword,
     create_time: new Date(),
     update_time: new Date()
   };
 
   const user = new UserModel(userData);
-
+  
   try {
     const savedUser = await user.save();
-    res.send({ user: user._id });
+    // const savedUpdatedUser = await updateUser.save();
+    res.send({ savedUser: savedUser });
   } catch (err) {
     res.status(400).send(err);
   }
@@ -104,20 +107,24 @@ exports.userLogin = async (req, res) => {
   const validPassword = await bcrypt.compare(req.body.password, user.password);
   if (!validPassword) return res.send({message: "Invalid password"});
 
-  // Create sign token
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-  // res.cookie("token", token, { httpOnly: true });
-  res.json({
-    token: token,
-    user: {
-      id: user._id,
-      firstname: user.firstname,
-      email: user.email,
-      groups: user.groups
-    }
-  });
-
-  // res.header('auth-token', token).send(token);
+   //Create and assign a token
+   const token = jwt.sign({
+                              _id: user._id,
+                              firstname: user.firstname,
+                              lastname: user.lastname,
+                              email: user.email
+                          }, 
+                          process.env.TOKEN_SECRET
+                        );
+   res.cookie('auth-token', token, { httpOnly: true });
+   res.json({token: token
+             ,user: {
+                       id: user._id,
+                       firstname: user.firstname,
+                       lastname: user.lastname,
+                       email: user.email,
+                    }
+           });
 
   console.log("User logged in and token assigned");
 };
