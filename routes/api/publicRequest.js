@@ -98,7 +98,7 @@ exports.createPublicRequest = async (req, res) => {
 
   try {
     const savedPublicRequest = await publicRequest.save();
-    res.send({ publicRequestId: savedPublicRequest._id, title: savedPublicRequest.title });
+    res.send({ publicRequestId: savedPublicRequest._id, newPublicRequest: savedPublicRequest });
     console.log("Successfully added to MongoDB");
   } catch (err) {
     res.status(400).send(err);

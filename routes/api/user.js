@@ -358,6 +358,8 @@ exports.partyDetection = async (req, res) => {
     const userEmails = await UserModel.find({_id: { $in: finalUserArray }});
 
     const partyDetection = extractColumn(userEmails, "email")
+    console.log(partyDetection);
+
     
     res.send(partyDetection);    
   }

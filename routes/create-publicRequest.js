@@ -48,7 +48,7 @@ router.post("/create-publicRequest", async (req, res) => {
 
     try {
       const savedPublicRequest = await publicRequest.save();
-      res.send({ publicRequestId: savedPublicRequest._id });
+      res.send({ publicRequestId: savedPublicRequest._id, publicRequest: publicRequest });
       console.log("Successfully added to MongoDB");
     } catch (err) {
       res.status(400).send(err);
