@@ -1,18 +1,7 @@
 const express = require("express");
-const router = express.Router();
-const MongoClient = require("mongodb").MongoClient;
 const mongoose = require("mongoose");
-const assert = require("assert");
-const verify = require("../verifyToken");
-const UserModel = require("../../models/User.js");
 const FavourModel = require("../../models/Favour.js");
-const UserGroupModel = require("../../models/UserGroup.js");
 const PublicRequestsModel = require("../../models/PublicRequest");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { registerValidation, loginValidation } = require("../../validation");
-const { response } = require("express");
-// const User = require('../models/User');
 require("dotenv/config");
 
 //Connection URL
@@ -35,8 +24,6 @@ const responseJSON = function(res, ret) {
 
 exports.createFavour = async (req, res) => {
   console.log("Create favour started...");
-  // console.log(req.body);
-  // console.log(req.body.rewards);
 
   // Create Public Request
   const favour = await FavourModel.create({
@@ -56,13 +43,12 @@ exports.createFavour = async (req, res) => {
   try {
     const savedFavour = await favour.save();
     // console.log(savedFavour);
-    res.send({ 
-        message: "Successfully created Favour", 
-        success: true,
-        _id: savedFavour._id,
-        favourOwed: savedFavour.favourOwed 
+    res.send({
+      message: "Successfully created Favour",
+      success: true,
+      _id: savedFavour._id,
+      favourOwed: savedFavour.favourOwed
     });
-    
   } catch (err) {
     res.status(400).send({ message: "Error creating Favour", success: false });
     // console.log(err);
@@ -185,14 +171,8 @@ exports.storeImageData = async (req, res) => {
       }
     }
 
-    // let doc = await FavourModel.findOneAndUpdate(filter, update, {
-    //   new: true
-    // });
-    // console.log(doc);
-
-    // responseJSON(res, doc);
     res.send(doc);
-    console.log("res1111 is :", res);
+    //console.log("res1111 is :", res);
   } catch (error) {
     res.send({
       message: "There was an error processing the image updates" + error
