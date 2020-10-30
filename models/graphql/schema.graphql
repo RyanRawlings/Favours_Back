@@ -7,3 +7,14 @@ type favour @model {
     isCompleted: Boolean
     debtForgiven: Boolean
 }
+
+type user @model {
+    id: ID!
+    firstName: String!
+    lastName: String!
+    profileImageURL: String!
+    email: String!
+    password: Password!
+    timeCreated: Date!
+    lastUpdated: Date!
+}
