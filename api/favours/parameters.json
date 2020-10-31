@@ -1,0 +1,5 @@
+{
+    "AppSyncApiName": "favours",
+    "DynamoDBBillingMode": "PAY_PER_REQUEST",
+    "DynamoDBEnableServerSideEncryption": false
+}

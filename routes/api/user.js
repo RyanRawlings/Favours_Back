@@ -349,7 +349,9 @@ exports.partyDetection = async (req, res) => {
       }
     }
 
-    for (let i = 0; i < userArray.length; i++) {
+    let range = userArray.length > 3? 4 : userArray.length;
+
+    for (let i = 0; i < range; i++) {
       if (userArray[i] !== userId.toString()) {
         finalUserArray.push(userArray[i]);
       }
@@ -357,9 +359,14 @@ exports.partyDetection = async (req, res) => {
     
     const userEmails = await UserModel.find({_id: { $in: finalUserArray }});
 
-    const partyDetection = extractColumn(userEmails, "email")
+    const partyDetection = extractColumn(userEmails, "email");
+
+    if (range >= 4) {
+      res.send(partyDetection);    
+    } else {
+      res.send(["Not enough data to generate party"]);    
+    }   
     
-    res.send(partyDetection);    
   }
 }
 

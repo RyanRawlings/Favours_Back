@@ -43,8 +43,9 @@ router.post("/create-publicRequest", async (req, res) => {
         publicRequest.rewards.push(rewardsArray[i]);
     }
     try {
-        const savedPublicRequest = await publicRequest.save();
-        res.send({publicRequestId: savedPublicRequest._id});
+      const savedPublicRequest = await publicRequest.save();
+      res.send({ publicRequestId: savedPublicRequest._id, publicRequest: publicRequest });
+      
     } catch (err) {
         res.status(400).send(err);
         console.log(err);

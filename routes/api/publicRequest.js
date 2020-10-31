@@ -1,19 +1,9 @@
 const express = require("express");
-const router = express.Router();
-const MongoClient = require("mongodb").MongoClient;
-const assert = require("assert");
-const verify = require("../verifyToken");
 const UserModel = require("../../models/User.js");
 const PublicRequestsModel = require("../../models/PublicRequest");
 const FavourModel = require("../../models/Favour.js");
-
-const UserGroupModel = require("../../models/UserGroup.js");
 const mongoose = require("mongoose");
 
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const { registerValidation, loginValidation } = require("../../validation");
-// const User = require('../models/User');
 require("dotenv/config");
 
 //Connection URL
@@ -98,7 +88,10 @@ exports.createPublicRequest = async (req, res) => {
 
   try {
     const savedPublicRequest = await publicRequest.save();
-    res.send({ publicRequestId: savedPublicRequest._id, title: savedPublicRequest.title });
+    res.send({
+      publicRequestId: savedPublicRequest._id,
+      newPublicRequest: savedPublicRequest
+    });
     console.log("Successfully added to MongoDB");
   } catch (err) {
     res.status(400).send(err);
@@ -108,7 +101,6 @@ exports.createPublicRequest = async (req, res) => {
 
 exports.deletePublicRequest = async (req, res) => {
   console.log("delete favour called");
-  // User.findByOne({_id: req.user});
   const idToDelete = req.body._id;
   mongoose.set("useFindAndModify", false);
 
@@ -122,6 +114,15 @@ exports.deletePublicRequest = async (req, res) => {
     }
   });
 };
+
+/*************************************************************************************************
+ * Add reward into exsiting reward array
+ *
+ * @param {array} req contains favourid, newReward(array) and privided by newUserDetails(object)
+ * @param {array} res response
+ * @return {array} response -> contains the msg from backend "success" or "error"
+ *
+ *************************************************************************************************/
 
 exports.addReward = async (req, res) => {
   console.log("add reward called");
@@ -147,12 +148,21 @@ exports.addReward = async (req, res) => {
   console.log(data);
 };
 
+/*************************************************************************************************
+ * Transfer the public request into favours
+ *
+ * @param {array} req contains newFavour(object)
+ * @param {array} res response
+ * @return {array} response -> contains the msg from backend "success" or "error"
+ *
+ *************************************************************************************************/
+
 exports.claimPublicRequest = async (req, res) => {
   console.log("claimPublicRequest called");
   console.log("reward query", req.body);
 
   const newFavour = [];
-  req.body.map((item, index) => {
+  req.body.map(item => {
     newFavour.push({
       requestUser: item.owingUser,
       owingUser: item.requestUser,
@@ -167,7 +177,7 @@ exports.claimPublicRequest = async (req, res) => {
       }
     });
   });
-  console.log("favour111:", newFavour);
+
   // create favour
 
   const favour = await FavourModel.create(newFavour);
