@@ -2,34 +2,42 @@ const express = require('express');
 const router = express.Router();
 const aws = require('aws-sdk');
 
+// set aws secretAccessKey, accessKeyId and region
 aws.config.update({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     region: 'ap-southeast-2'
 });
 
+// new aws object
 const s3 = new aws.S3();
 
+/**
+ * Api for delete image from aws
+ * @desc takes image key and delete from aws
+ * @param string key
+ * @return string
+ */
 router.post("/delete-s3-image", async (req, res) => {
-    // console.log('Get Image Route called successfully...');
-    let errorMessage; // error message for response
+    // error message for response
+    let errorMessage;
 
-    req.setTimeout(10 * 1000); // times out after 10secs
+    // times out after 10secs
+    req.setTimeout(10 * 1000);
 
-    req.socket.removeAllListeners('timeout'); // This is the work around
+    req.socket.removeAllListeners('timeout');
     req.socket.once('timeout', () => {
-        req.timedout = true;        
+        req.timedout = true;
     });
 
     try {
-        // console.log(req.body);
         const params = {
             Bucket: 'favours-user-images',
             Key: req.body.key
         }
-    
-        s3.deleteObject(params, function (err, data) {                    
-            // console.log('Starting image fetch from s3...');
+
+        // delete image from aws
+        s3.deleteObject(params, function (err, data) {
             if (data === null || data === undefined) {
                 errorMessage = "Image does not exist on s3...";
             } else {
@@ -47,11 +55,12 @@ router.post("/delete-s3-image", async (req, res) => {
                 } else {
                     res.send("Invalid file format")
                 }
-            }        
-        })  
+            }
+        })
     } catch (err) {
-        res.status(504).send({ "Error Message": "Server took too long to respond..." });   
-    }        
+        res.status(504).send({"Error Message": "Server took too long to respond..."});
+    }
 })
 
+// export "/delete-s3-image" router
 module.exports = router;

@@ -1,10 +1,8 @@
 const express = require("express");
-const bodyParser = require("body-parser");
 const router = express.Router();
-// const jwtauth = require("../middleware/jwtauth");
 
 const api = require("require-all")({
-  dirname: __dirname + "/api"
+    dirname: __dirname + "/api"
 });
 
 //User API
@@ -13,14 +11,11 @@ router.post("/api/user/login", api.user.userLogin);
 router.get("/api/user/get", api.user.getUsers);
 router.get("/api/user/get-leaderboard", api.user.userLeaderboard);
 router.post("/api/user/get-one", api.user.getUser);
-
 router.post("/api/user/groups", api.user.getUserGroups);
 router.post("/api/user/group-users", api.user.getGroupUsers);
-router.post("/api/user/upload-profile-image", api.user.updateUserProfileImage)
-
+router.post("/api/user/upload-profile-image", api.user.updateUserProfileImage);
 router.post("/api/user/get/activity", api.user.getUserActivity);
 router.post("/api/user/create/activity", api.user.createUserActivity);
-
 router.post("/api/user/party-detection", api.user.partyDetection);
 
 //Public Request API

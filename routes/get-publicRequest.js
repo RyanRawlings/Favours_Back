@@ -10,34 +10,40 @@ const url = process.env.DB_CONNECTION;
 //Database Name
 const dbName = "Favours";
 
+/**
+ * Api to get all public requests
+ * @desc returns all public requests from publicRequests table
+ * @param void
+ * @return array object allPublicRequests
+ */
 router.get("/get-publicRequest", (req, res) => {
-  // User.findByOne({_id: req.user});
-  MongoClient.connect(
-    url,
-    { useUnifiedTopology: true, useNewUrlParser: true },
-    function(err, client) {
-      if (err) {
-        console.log(
-          "Unsuccessful connection attempt to MongoDB -> fetching the favour debits"
-        );
-        throw err;
-      } else {
-        console.log(
-          "Successful connection made to MongoDB -> fetching the favour debits"
-        );
+    MongoClient.connect(
+        url,
+        {useUnifiedTopology: true, useNewUrlParser: true},
+        function (err, client) {
+            if (err) {
+                console.log(
+                    "Unsuccessful connection attempt to MongoDB -> fetching the favour debits"
+                );
+                throw err;
+            } else {
+                console.log(
+                    "Successful connection made to MongoDB -> fetching the favour debits"
+                );
 
-        let db = client.db(dbName);
-        db.collection("publicRequests")
-          .find({})
-          .toArray(function(err, result) {
-            if (err) throw err;
-            res.json({ allPublicRequests: result });
-            client.close();
-          });
-    }
-    
-    }
-  );
+                let db = client.db(dbName);
+                db.collection("publicRequests")
+                    .find({})
+                    .toArray(function (err, result) {
+                        if (err) throw err;
+                        res.json({allPublicRequests: result});
+                        client.close();
+                    });
+            }
+
+        }
+    );
 });
 
+// export "/get-publicRequest" router
 module.exports = router;
