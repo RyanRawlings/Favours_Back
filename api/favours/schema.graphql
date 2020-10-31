@@ -1,12 +1,5 @@
-type Favour @model {
+type Todo @model {
   id: ID!
   name: String!
   description: String
-  create_time: Date
-  request_user: String
-  owing_user: String
-  description: String
-  favour_owed: String
-  is_completed: Boolean
-  debt_forgiven: Boolean
 }
