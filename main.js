@@ -5,10 +5,8 @@ const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const jwt = require('express-jwt');
 const session = require('express-session');
 require('dotenv/config');
-
 
 dotenv.config();
 
@@ -19,27 +17,20 @@ var indexRouter = require("./routes/index");
 app.use(cors());
 app.use(express.json());
 app.use(
-  bodyParser.urlencoded({
-    extended: true
- }));
-app.use(session({ 
-                resave: true,
-                secret: process.env.TOKEN_SECRET,
-                saveUninitialized: true }));
-
-// app.use(
-//     jwt(
-//       secret: process.env.TOKEN_SECRET,
-//       getToken: req => req.cookies.token,
-//       algorithms: ['RS256']
-//     })
-//   );
+    bodyParser.urlencoded({
+        extended: true
+    }));
+app.use(session({
+    resave: true,
+    secret: process.env.TOKEN_SECRET,
+    saveUninitialized: true
+}));
 
 //Connect to MongoDB instance
 mongoose.connect(process.env.DB_CONNECTION, {
-  useUnifiedTopology: true,
-  useNewUrlParser: true,
-  useFindAndModify: false,
+    useUnifiedTopology: true,
+    useNewUrlParser: true,
+    useFindAndModify: false,
 });
 
 //Import routes - Data
@@ -58,11 +49,6 @@ app.use("/api/get", awsS3DeleteImageRoute);
 //Import Routes - Authentication
 const authRoute = require('./routes/auth');
 app.use('/api/user/old', authRoute);
-
-//Import routes
-//Posts
-// const fileRoute = require("./routes/image-upload");
-// app.use("/api/file", fileRoute);
 
 const fileUpdateKeyRoute = require("./routes/image-update-key");
 app.use("/api/file", fileUpdateKeyRoute);

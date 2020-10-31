@@ -5,12 +5,18 @@ const upload = require('../services/FileUpload');
 
 const fileUpload = upload.array('image', 10);
 
+/**
+ * @desc takes file and returns files location
+ * @param file files
+ * @return string status, array filesArray, array locationArray
+ */
 exports.uploadS3Images = async (req, res) => {
     fileUpload(req, res, (error) => {
         if (error) {
             return res.status(422)
-                        .send({errors: [{title: 'File upload error', detail: err.message}]
-                    });
+                .send({
+                    errors: [{title: 'File upload error', detail: err.message}]
+                });
         } else {
             // If File not found
             if (req.files === undefined) {
@@ -38,32 +44,7 @@ exports.uploadS3Images = async (req, res) => {
             }
         }
 
-        // if (req.file) {
-        //     return res.json({'key': req.file.key});
-        // } else {
-        //     return res.json({'key': null});
-        // }
-
     })
 }
-
-// router.post('/image-upload', async function (req, res) {   
-    // console.log(file);
-
-    // singleFileUpload(req, res, function (err) {
-    //     // console.log("Data from post: ", req);
-    //     if (err) {
-    //         return res.status(422).send({errors: [{title: 'File upload error', detail: err.message}]});
-    //     }        
-    //     if (req.file) {
-    //         // return res.json({'imageUrl': req.file.location});
-    //         return res.json({'key': req.file.key});
-    //     }
-    //     else {
-    //         // return res.json({'imageUrl': null});
-    //         return res.json({'key': null});
-    //     }            
-    // });
-// });
 
 module.exports = router;
