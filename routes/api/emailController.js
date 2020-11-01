@@ -1,5 +1,12 @@
 const nodemailer = require('nodemailer');
 
+
+/*******************************************************
+ * Send welcome email
+ * @desc send email to the user email 
+ * @param user email
+ * @return void
+ *******************************************************/
 exports.welcomeEmail = async function(user) {
     const transporter = nodemailer.createTransport({
       service: 'gmail',
