@@ -32,19 +32,17 @@ const responseJSON = function(res, ret) {
 };
 
 /*******************************************************************************************
- * Returns user id on success or 400 status on error
+ * Sign up or registration
  * 
- * @param {array} req contains firstname, lastname, email, password of the new user
- * @param {array} res response 
- * @return {array} response -> user id or status 400 error
- *
+ * @desc takes user information and save them into database and create new user
+ * @param string firstname, string middlename(optional), string lastname, string email, string password
+ * @return int user - user id or status 400 error
+ * 
  *******************************************************************************************/
-
 exports.userRegister = async (req, res) => {  
   // console.log("register called inside controller...")
 
   // Validate the data before passing the request to the DB
-  console.log("Data request recieved...",req.body)
   const { error } = registerValidation(req.body);
   if (error) return res.status(400).send(error.details[0].message);
 
@@ -73,7 +71,6 @@ exports.userRegister = async (req, res) => {
   
   try {
     const savedUser = await user.save();
-    // const savedUpdatedUser = await updateUser.save();
     res.send({ savedUser: savedUser });
   } catch (err) {
     res.status(400).send(err);
@@ -81,12 +78,12 @@ exports.userRegister = async (req, res) => {
 };
 
 /*************************************************************************************************
- * Returns jwt token and user details to be updated in UserContext and stored in Cookies client side
- * 
- * @param {array} req contains email and password string of user trying to log in
- * @param {array} res response 
- * @return {array} response -> contains array containing user details and jwt token. 
- * 
+ 
+ * Login
+ * @desc takes user's email and password, match them in database, if information are correct then create a token and save it in cookie
+ * @param string email, string password
+ * @return string token - assigned in cookie, object user - user id, first name, last name, email
+ 
  *************************************************************************************************/
 
 exports.userLogin = async (req, res) => {
@@ -99,42 +96,53 @@ exports.userLogin = async (req, res) => {
   if (error) return res.send({message: error.details[0].message});
 
   // Check if email exists
-  const user = await UserModel.findOne({ email: req.body.email });
-  if (!user) return res.send({ message: "Email is not found"});
+  try{
+    const user = await UserModel.findOne({ email: req.body.email });
+    if (!user) return res.send({ message: "Email is not found"});
+  
+    // Check password is correct
+    const validPassword = await bcrypt.compare(req.body.password, user.password);
+    if (!validPassword) return res.send({message: "Invalid password"});
+  
+     //Create and assign a token
+     const token = jwt.sign({
+                                _id: user._id,
+                                firstname: user.firstname,
+                                lastname: user.lastname,
+                                email: user.email
+                            }, 
+                            process.env.TOKEN_SECRET
+                          );
+    //  res.cookie('auth-token', token, { httpOnly: true });
+     res.json({token: token
+               ,user: {
+                         id: user._id,
+                         firstname: user.firstname,
+                         lastname: user.lastname,
+                         email: user.email,
+                      }
+             });
+  
+    console.log("User logged in and token assigned"); 
+  }catch(err){
+    res.status(400).send(err);
+  }
 
-  // Check password is correct
-  const validPassword = await bcrypt.compare(req.body.password, user.password);
-  if (!validPassword) return res.send({message: "Invalid password"});
-
-   //Create and assign a token
-   const token = jwt.sign({
-                              _id: user._id,
-                              firstname: user.firstname,
-                              lastname: user.lastname,
-                              email: user.email
-                          }, 
-                          process.env.TOKEN_SECRET
-                        );
-  //  res.cookie('auth-token', token, { httpOnly: true });
-   res.json({token: token
-             ,user: {
-                       id: user._id,
-                       firstname: user.firstname,
-                       lastname: user.lastname,
-                       email: user.email,
-                    }
-           });
-
-  console.log("User logged in and token assigned");
 };
 
+
+/**
+ * Logout
+ * @desc clears login token from cookie
+ */
 exports.userLogout = async (req, res) => {
   res.clearCookie();
 };
 
 /****************************************************************************************************
- * Returns a success status message indicating whether the database update completed successfully
+ * Update user profile image
  * 
+ * @dec upload image and Returns a success status message indicating whether the database update completed successfully
  * @param {array} req contains the userId and aws imageUrl
  * @param {array} res response 
  * @return {array} response message -> success status
@@ -146,41 +154,51 @@ exports.updateUserProfileImage = async (req, res) => {
 
   const filter = { _id: userId };
   const update = { profileImageUrl: profileImageUrl }
+  try {
 
-  const user = await UserModel.findOneAndUpdate(filter, update);
-
-  if (user) {
-    console.log(user);
-    return responseJSON(res, { message: "Successfully uploaded image" });
-  } else {
-    return responseJSON(res, { message: "Error in uploading image" });
+      const user = await UserModel.findOneAndUpdate(filter, update);
+      if (user) {
+        console.log(user);
+        return responseJSON(res, { message: "Successfully uploaded image" });
+      } else {
+        return responseJSON(res, { message: "Error in uploading image" });
+      }
+  } catch (err) {
+    res.status(400).send(err);
   }
+
   
 };
 
 /***************************************************************************************************************
- * Returns an array of all users
+ * Get all users 
  * 
+ * @dec  Returns an array of all users list
  * @param {array} req unused
  * @param {array} res response 
  * @return {array} userEmailArray -> returns an array of object arrays that contain the userId and userEmail
  * 
  ***************************************************************************************************************/
 exports.getAllUsers = async (req, res) => {
-  console.log("get users is being called");
-  let result = await UserModel.find({});
+  try {
+      
+      let result = await UserModel.find({});
 
-  const userEmailArray = [];
-  result.forEach(element => userEmailArray.push({
-    _id: element._id,
-    email: element.email,
-  }));
+      const userEmailArray = [];
+      result.forEach(element => userEmailArray.push({
+        _id: element._id,
+        email: element.email,
+      }));
 
-  responseJSON(res, userEmailArray);
+      responseJSON(res, userEmailArray);    
+  } catch (err) {
+    res.status(400).send(err);
+  }
+
 }
 
 /*****************************************************************************
- * Api for user's emails
+ * Get user's emails
  * Currently being used to fetch the specific emails for each of the users,
  * that have added rewards to a Public Request
  * 
@@ -220,37 +238,41 @@ exports.getUserEmails = async (req, res) => {
 }
 
 /*******************************************************************************************************************
- * Returns an array of object arrays pertaining to each of the groups the active user is a part of
+ * Get all user groups
  * 
+ * @dec Returns an array of object arrays pertaining to each of the groups the active user is a part of
  * @param {array} req contains the id of the active user
  * @param {array} res response 
  * @return {array} resultDocument.groups -> returns the nested group documents that have been populated with the relevant group data
  * 
  *******************************************************************************************************************/
 exports.getUserGroups = async (req, res) => {
-  console.log("get user groups is being called");
-
+  
   const userId = req.body.userId;
 
-  const filter = { _id: mongoose.Types.ObjectId(userId) };
+  try{
+    const filter = { _id: mongoose.Types.ObjectId(userId) };
 
-  const result = await UserModel.findOne(filter);
+    const result = await UserModel.findOne(filter);
+  
+    await result.populate('groups')
+                .execPopulate()
+                .then(resultDocument => {
+                  console.log(resultDocument.groups);
+                  responseJSON(res, resultDocument.groups);
+                })
+                .catch(error => { 
+                  res.send("Error occurred");
+                });
+  }catch(err){
+    res.status(400).send(err);
+  }
 
-  await result.populate('groups')
-              .execPopulate()
-              .then(resultDocument => {
-                console.log(resultDocument.groups);
-                responseJSON(res, resultDocument.groups);
-              })
-              .catch(error => {
-                console.log(error);
-                res.send("Error occurred");
-              });
 }
 
 /***************************************************************************************************
- * Returns an array of arrays containing all the users for each groupId in the request 
- * 
+ * Get all user by each group id
+ * @dec  Returns an array of arrays containing all the users for each groupId in the request 
  * @param {array} req contains an array of groupIds in the body
  * @param {array} res response 
  * @return {array} groupArrays -> information about the user account
@@ -267,45 +289,54 @@ exports.getGroupUsers = async (req, res) => {
         _id: element._id,
         group_name: element.group_name
     }))
-
-    for (let i = 0; i < groupArrays.length; i++) {
-      const result = await UserModel.find({
-                                            groups: {
-                                                     $in: groupArrays[i]._id
-                                      }});
+    try{
+      for (let i = 0; i < groupArrays.length; i++) {
+  
+        const result = await UserModel.find({
+          groups: {
+                  $in: groupArrays[i]._id
+          }});
       if (result) {
-        const userEmails = extractColumn(result, 'email');
+          const userEmails = extractColumn(result, 'email');
 
-        groupArrays[i]['users'] = userEmails;
+          groupArrays[i]['users'] = userEmails;
+      }
 
-      }                                      
-    }
-
+      }
+    }catch(err){
+    res.status(400).send(err);
+  }
     if (groupArrays) {
-      console.log(groupArrays)
       responseJSON(res, groupArrays);
     }
 }
 
 /***************************************************************************************
- * Returns an object array about the active user account
+ * Get active user
  * 
+ * @dec Returns an object array about the active user account
  * @param {array} req contains the userId of the active user
  * @param {array} res response 
  * @return {array} result -> information about the user account
  * 
  **************************************************************************************/
 exports.getUser = async (req, res) => {
-  let result = await UserModel.findOne(req.body);
+  try{
+    let result = await UserModel.findOne(req.body);
   
-  if (result) {
-    res.send(result);
+    if (result) {
+      res.send(result);
+    }
+  }catch(err){
+    res.status(400).send(err);
   }
+
 }
 
 /******************************************************************************************************************
- * Returns an array of user emails that the user should join a party with
+ * Get all userleaderboard 
  * 
+ * @dec get all userleaderboard from user
  * @param {array} req unused parameter
  * @param {array} res response
  * @return {array} leaderboard -> leaderboard data in the form of object array is sent back to requester
@@ -355,8 +386,9 @@ exports.userLeaderboard = async (req, res) => {
 }
 
 /******************************************************************************************************************
- * Returns an array of user emails that the user should join a party with
+ * Party detection
  * 
+ * @desc array of user emails that the user should join a party with
  * @param {array} req contains userId of the active user
  * @return {array} partyDetection an array of user emails, the active user should join a party with
  * 
@@ -365,50 +397,55 @@ exports.partyDetection = async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.body._id);
 
   let extractColumn = (arr, column) => arr.map(x => x[column]);
+  try{
+    let userFavours = await FavourModel.find({ $or: [{ requestUser: userId }, { owingUser: userId }]});
+      
+    if (userFavours) {
+      
+      const requestUsers = extractColumn(userFavours, "requestUser");
+      const owingUsers = extractColumn(userFavours, "owingUser");
+      
+      let userArray = [];
+      let finalUserArray = [];
+      for (let i = 0; i < requestUsers.length; i++) {
+        if (!userArray.includes(requestUsers[i].toString())) {
+          userArray.push(requestUsers[i].toString());
+        }
 
-  let userFavours = await FavourModel.find({ $or: [{ requestUser: userId }, { owingUser: userId }]});
-  
-  if (userFavours) {
-    
-    const requestUsers = extractColumn(userFavours, "requestUser");
-    const owingUsers = extractColumn(userFavours, "owingUser");
-    
-    let userArray = [];
-    let finalUserArray = [];
-    for (let i = 0; i < requestUsers.length; i++) {
-      if (!userArray.includes(requestUsers[i].toString())) {
-        userArray.push(requestUsers[i].toString());
+        if (!userArray.includes(owingUsers[i].toString())) {
+          userArray.push(owingUsers[i].toString());
+        }
       }
 
-      if (!userArray.includes(owingUsers[i].toString())) {
-        userArray.push(owingUsers[i].toString());
+      let range = userArray.length > 3? 4 : userArray.length;
+
+      for (let i = 0; i < range; i++) {
+        if (userArray[i] !== userId.toString()) {
+          finalUserArray.push(userArray[i]);
+        }
       }
+      
+      const userEmails = await UserModel.find({_id: { $in: finalUserArray }});
+
+      const partyDetection = extractColumn(userEmails, "email");
+
+      if (range >= 4) {
+        res.send(partyDetection);    
+      } else {
+        res.send(["Not enough data to generate party"]);    
+      }   
+      
     }
-
-    let range = userArray.length > 3? 4 : userArray.length;
-
-    for (let i = 0; i < range; i++) {
-      if (userArray[i] !== userId.toString()) {
-        finalUserArray.push(userArray[i]);
-      }
-    }
-    
-    const userEmails = await UserModel.find({_id: { $in: finalUserArray }});
-
-    const partyDetection = extractColumn(userEmails, "email");
-
-    if (range >= 4) {
-      res.send(partyDetection);    
-    } else {
-      res.send(["Not enough data to generate party"]);    
-    }   
-    
+  }catch(err){
+    res.status(400).send(err);
   }
+
 }
 
 /**********************************************************************************************************
- * Returns a success message whether the new activity was written to the database
+ * Create user activity
  * 
+ * @dec Returns a success message whether the new activity was written to the database
  * @param {array} req contains userId and the action performed
  * @return {string} success status message sent back to requester
  * 
@@ -429,7 +466,6 @@ exports.createUserActivity = async (req, res) => {
     try {
       const savedUserActivity = await userActivity.save();
       return res.send({ message: "Success" });
-      // welcomeEmail(userData);
     } catch (err) {
       return res.send(err);
     }
@@ -437,21 +473,29 @@ exports.createUserActivity = async (req, res) => {
 }
 
 /*************************************************************************************************************
- * Returns an array of user activity unordered
+ * Get user activity
  * 
+ * @dec Returns an array of user activity unordered
  * @param {array} req the object id of the current user
  * @return {array} userActivity array of the userActivity details
  * 
  *************************************************************************************************************/
 exports.getUserActivity = async (req, res) => {
   const userId = req.body._id;
-  const user = await UserModel.findOne({ _id: userId });
+  try{
 
-  if (user) {
-    const userActivity = await UserActivityModel.find({ userId: userId });
+    const user = await UserModel.findOne({ _id: userId });
 
-    if (userActivity) {
-      responseJSON(res, userActivity);
+    if (user) {
+      const userActivity = await UserActivityModel.find({ userId: userId });
+  
+      if (userActivity) {
+        responseJSON(res, userActivity);
+      }
     }
+
+  }catch(err){
+    res.status(400).send(err);
   }
+
 }

@@ -25,14 +25,13 @@ const responseJSON = function(res, ret) {
 };
 
 /*******************************************************************
- * Api to get all public requests
+ * Get all public requests
  * @desc returns all public requests from publicRequests table
  * @param void
  * @return array object allPublicRequests
  *******************************************************************/
 exports.getPublicRequests = async (req, res) => {
-  // console.log("get publicRequests being called inside controller");
-
+  
   let result = await PublicRequestsModel.find({}).populate({
     path: "requestUser",
     model: "User",
@@ -46,17 +45,14 @@ exports.getPublicRequests = async (req, res) => {
 };
 
 /**********************************************************************************************
- * Api for create public request
+ * Create public request
  * @desc saves public request on database
  * @param email requestedBy, string requestTitle, string requestTaskDescription, array rewards
  * @return int publicRequestId - public request id saved in database
  **********************************************************************************************/
 
 exports.createPublicRequest = async (req, res) => {
-  console.log("Create public called inside public request controller");
-  // console.log(req.body);
-  // console.log(req.body.rewards);
-
+  
   // Get the document relating to the requesting user
   const user = await UserModel.findOne({ email: req.body.requestedBy });
 
@@ -81,11 +77,9 @@ exports.createPublicRequest = async (req, res) => {
   let rewardsArray = [];
   for (let i = 0; i < req.body.rewards.length; i++) {
     console.log("Post creation child push start...");
-    // console.log(req.body.rewards[0].rewardId);
-    // console.log(req.body.rewards[0].offeredById);
 
     rewardsArray.push({
-      // item: mongoose.Types.ObjectId(req.body.rewards[i].rewardName),
+      
       item: req.body.rewards[i].rewardName,
       quantity: req.body.rewards[i].rewardQuantity,
       providedBy: mongoose.Types.ObjectId(req.body.rewards[i].offeredById),
@@ -105,32 +99,46 @@ exports.createPublicRequest = async (req, res) => {
       publicRequestId: savedPublicRequest._id,
       newPublicRequest: savedPublicRequest
     });
+
     console.log("Successfully added to MongoDB");
+    
   } catch (err) {
     res.status(400).send(err);
-    console.log(err);
   }
 };
 
-exports.deletePublicRequest = async (req, res) => {
-  console.log("delete favour called");
-  const idToDelete = req.body._id;
-  mongoose.set("useFindAndModify", false);
 
-  PublicRequestsModel.findByIdAndDelete(idToDelete, function(err) {
-    if (err) {
-      res.send({
-        message: "There was an error deleting the public request " + err
+/*******************************************************
+ * Deleting public request
+ * @desc takes id and delete from favours table
+ * @param int _id
+ * @return string message
+ *******************************************************/
+
+exports.deletePublicRequest = async (req, res) => {
+  
+  const idToDelete = req.body._id;
+  try{
+      mongoose.set("useFindAndModify", false);
+
+      PublicRequestsModel.findByIdAndDelete(idToDelete, function(err) {
+        if (err) {
+          res.send({
+            message: "There was an error deleting the public request " + err
+          });
+        } else {
+          res.send({ message: "Successfully deleted public request" });
+        }
       });
-    } else {
-      res.send({ message: "Successfully deleted public request" });
-    }
-  });
+  }catch (err) {
+    res.status(400).send(err);
+  }
+
 };
 
 /*************************************************************************************************
- * Add reward into exsiting reward array
- *
+ * Add reward
+ * @dec Add reward into exsiting reward array
  * @param {array} req contains favourid, newReward(array) and privided by newUserDetails(object)
  * @param {array} res response
  * @return {array} response -> contains the msg from backend "success" or "error"
@@ -138,32 +146,34 @@ exports.deletePublicRequest = async (req, res) => {
  *************************************************************************************************/
 
 exports.addReward = async (req, res) => {
-  console.log("add reward called");
-  console.log("reward query", req.body);
+  
   const idToUpdate = req.body._id;
-  mongoose.set("useFindAndModify", false);
-  let data = await PublicRequestsModel.findByIdAndUpdate(
-    idToUpdate,
-    {
-      $set: { rewards: req.body.newReward }
-    },
-    function(err) {
-      if (err) {
-        res.send({
-          message: "There was an error adding the public request " + err
-        });
-      }
-    }
-  );
+  try{
+      mongoose.set("useFindAndModify", false);
+      let data = await PublicRequestsModel.findByIdAndUpdate(
+        idToUpdate,
+        {
+          $set: { rewards: req.body.newReward }
+        },
+        function(err) {
+          if (err) {
+            res.send({
+              message: "There was an error adding the public request " + err
+            });
+          }
+        }
+      );
 
-  res.json({ message: "Successfully adding public request", data: data });
+      res.json({ message: "Successfully adding public request", data: data });
+  }catch (err) {
+  res.status(400).send(err);
+}
 
-  console.log(data);
 };
 
 /*************************************************************************************************
- * Transfer the public request into favours
- *
+ * Claim public request
+ * @dec Transfer the public request into favours
  * @param {array} req contains newFavour(object)
  * @param {array} res response
  * @return {array} response -> contains the msg from backend "success" or "error"
@@ -171,9 +181,7 @@ exports.addReward = async (req, res) => {
  *************************************************************************************************/
 
 exports.claimPublicRequest = async (req, res) => {
-  console.log("claimPublicRequest called");
-  console.log("reward query", req.body);
-
+  
   const newFavour = [];
   req.body.map(item => {
     newFavour.push({
@@ -192,8 +200,12 @@ exports.claimPublicRequest = async (req, res) => {
   });
 
   // create favour
+  try{
+    const favour = await FavourModel.create(newFavour);
 
-  const favour = await FavourModel.create(newFavour);
+    await db.collection("favours").insert(favour);
+  }catch (err) {
+    res.status(400).send(err);
+  }
 
-  await db.collection("favours").insert(favour);
 };
