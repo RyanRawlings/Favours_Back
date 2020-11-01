@@ -1,6 +1,7 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const FavourModel = require("../../models/Favour.js");
+const FavourTypeModel = require("../../models/FavourType");
 const PublicRequestsModel = require("../../models/PublicRequest");
 require("dotenv/config");
 
@@ -56,7 +57,7 @@ exports.createFavour = async (req, res) => {
 };
 
 exports.getFavours = async (req, res) => {
-  console.log(req.body);
+  // console.log(req.body);
 
   const userId = req.body.userId;
   const query = {
@@ -71,7 +72,6 @@ exports.getFavours = async (req, res) => {
   let bothArrays = [];
 
   if (result) {
-    // console.log(userId,result[0].requestUser,mongoose.Types.ObjectId(result[0].requestUser).equals(mongoose.Types.ObjectId(userId)))
     for (let i = 0; i < result.length; i++) {
       if (result[i].debt_forgiven === true) {
         forgivenArray.push(result[i]);
@@ -99,7 +99,7 @@ exports.getFavours = async (req, res) => {
     ];
   }
 
-  console.log("result", bothArrays);
+  // console.log("result", bothArrays);
   responseJSON(res, bothArrays);
 };
 
@@ -172,7 +172,6 @@ exports.storeImageData = async (req, res) => {
     }
 
     res.send(doc);
-    //console.log("res1111 is :", res);
   } catch (error) {
     res.send({
       message: "There was an error processing the image updates" + error
@@ -191,3 +190,42 @@ exports.forgiveDebt = async (req, res) => {
     responseJSON(res, { message: error });
   }
 };
+
+
+/*******************************************************
+ * Api for deleting favour
+ * @desc takes id and delete from favours table
+ * @param int _id
+ * @return boolean ok, string message
+ *******************************************************/
+exports.deleteFavour = async (req, res) => {
+      let deleteId = req.body._id;
+
+      try {
+        const response = await FavourModel.findOneAndDelete({_id: deleteId});
+        
+        if (response) {
+          res.send({ok: true, message: "Successfully deleted Favour"})
+        } else {
+          res.send({ok: false, message: "Error deleting Favour"});
+        }    
+
+      } catch (err) {
+        res.send({ok: false, message: err});
+      }
+}
+
+exports.getFavourType = async (req, res) => {
+  try {
+    const response = await FavourTypeModel.find({});
+
+    if (response) {
+      res.send({ favourTypes: response });
+    } else {
+      res.send({ message: "There was an error retrieving the Favour types" });
+    }
+    
+  } catch (err) {
+    res.send({ message: "There was an error retrieving the Favour types" })
+  }
+}

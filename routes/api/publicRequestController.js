@@ -24,8 +24,15 @@ const responseJSON = function(res, ret) {
   }
 };
 
+/*******************************************************************
+ * Api to get all public requests
+ * @desc returns all public requests from publicRequests table
+ * @param void
+ * @return array object allPublicRequests
+ *******************************************************************/
 exports.getPublicRequests = async (req, res) => {
-  console.log("1111");
+  // console.log("get publicRequests being called inside controller");
+
   let result = await PublicRequestsModel.find({}).populate({
     path: "requestUser",
     model: "User",
@@ -35,12 +42,18 @@ exports.getPublicRequests = async (req, res) => {
       model: "UserGroup"
     }
   });
-  console.log("result", result);
   responseJSON(res, result);
 };
 
+/**********************************************************************************************
+ * Api for create public request
+ * @desc saves public request on database
+ * @param email requestedBy, string requestTitle, string requestTaskDescription, array rewards
+ * @return int publicRequestId - public request id saved in database
+ **********************************************************************************************/
+
 exports.createPublicRequest = async (req, res) => {
-  console.log("Create public request started...");
+  console.log("Create public called inside public request controller");
   // console.log(req.body);
   // console.log(req.body.rewards);
 

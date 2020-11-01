@@ -6,38 +6,42 @@ const aws = require('aws-sdk');
 aws.config.update({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    region: 'ap-southeast-2'
+    region: 'us-east-2'
 });
 
 // new aws object
 const s3 = new aws.S3();
 
-/**
- * Api for delete image from aws
- * @desc takes image key and delete from aws
+/************************************************************
+ * Method is currently unused as, the frontend currently
+ * just takes a publicly accessible url, that does not
+ * require any authentication
+ * 
+ * @desc takes image key and get image from aws
  * @param string key
- * @return string
- */
-router.post("/delete-s3-image", async (req, res) => {
-    // error message for response
-    let errorMessage;
+ * @return string data(base64)
+ ***********************************************************/
+router.post("/get-s3-image", async (req, res) => {
+    console.log('Get Image Route called successfully...');
+    let errorMessage; // error message for response
 
-    // times out after 10secs
-    req.setTimeout(10 * 1000);
+    req.setTimeout(10 * 1000); // times out after 10secs
 
-    req.socket.removeAllListeners('timeout');
+    req.socket.removeAllListeners('timeout'); // This is the work around
     req.socket.once('timeout', () => {
         req.timedout = true;
     });
 
     try {
+        console.log(req.body);
         const params = {
-            Bucket: 'favours-user-images',
+            Bucket: 'favour-request-user-images',
             Key: req.body.key
         }
 
-        // delete image from aws
-        s3.deleteObject(params, function (err, data) {
+        // get image from aws
+        s3.getObject(params, function (err, data) {
+            console.log('Starting image fetch from s3...');
             if (data === null || data === undefined) {
                 errorMessage = "Image does not exist on s3...";
             } else {
@@ -47,11 +51,11 @@ router.post("/delete-s3-image", async (req, res) => {
                 console.log("Image loaded from s3...");
 
                 if (mimeType === "image/jpeg") {
-                    res.send(`data:${mimeType};base64,${base64}"`);
+                    res.send({data: `data:${mimeType};base64,${base64}`});
                 } else if (mimeType === "image/png") {
-                    res.send(`data:${mimeType};base64,${base64}"`);
+                    res.send({data: `data:${mimeType};base64,${base64}`});
                 } else if (mimeType === "image/gif") {
-                    res.send(`data:${mimeType};base64,${base64}"`);
+                    res.send({data: `data:${mimeType};base64,${base64}`});
                 } else {
                     res.send("Invalid file format")
                 }
@@ -62,5 +66,5 @@ router.post("/delete-s3-image", async (req, res) => {
     }
 })
 
-// export "/delete-s3-image" router
+// export "/get-s3-image" router
 module.exports = router;

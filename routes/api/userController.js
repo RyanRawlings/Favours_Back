@@ -46,6 +46,8 @@ const responseJSON = function(res, ret) {
  *******************************************************************************************/
 
 exports.userRegister = async (req, res) => {  
+  // console.log("register called inside controller...")
+
   // Validate the data before passing the request to the DB
   console.log("Data request recieved...",req.body)
   const { error } = registerValidation(req.body);
@@ -93,6 +95,8 @@ exports.userRegister = async (req, res) => {
  *************************************************************************************************/
 
 exports.userLogin = async (req, res) => {
+  // console.log("login called inside controller...")
+  
   // Validate the data before passing the request to the DB
   console.log("Data request recieved...",req.body);
 
@@ -116,7 +120,7 @@ exports.userLogin = async (req, res) => {
                           }, 
                           process.env.TOKEN_SECRET
                         );
-   res.cookie('auth-token', token, { httpOnly: true });
+  //  res.cookie('auth-token', token, { httpOnly: true });
    res.json({token: token
              ,user: {
                        id: user._id,
@@ -129,6 +133,10 @@ exports.userLogin = async (req, res) => {
   console.log("User logged in and token assigned");
 };
 
+exports.userLogout = async (req, res) => {
+  res.clearCookie();
+};
+
 /****************************************************************************************************
  * Returns a success status message indicating whether the database update completed successfully
  * 
@@ -137,7 +145,6 @@ exports.userLogin = async (req, res) => {
  * @return {array} response message -> success status
  * 
  ****************************************************************************************************/
-
 exports.updateUserProfileImage = async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.body._id);
   const profileImageUrl = req.body.imageUrl;
@@ -164,8 +171,7 @@ exports.updateUserProfileImage = async (req, res) => {
  * @return {array} userEmailArray -> returns an array of object arrays that contain the userId and userEmail
  * 
  ***************************************************************************************************************/
-
-exports.getUsers = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
   console.log("get users is being called");
   let result = await UserModel.find({});
 
@@ -178,6 +184,46 @@ exports.getUsers = async (req, res) => {
   responseJSON(res, userEmailArray);
 }
 
+/*****************************************************************************
+ * Api for user's emails
+ * Currently being used to fetch the specific emails for each of the users,
+ * that have added rewards to a Public Request
+ * 
+ * @desc takes user's ids and returns user's email from database
+ * @param array list
+ * @return array userArray
+ *****************************************************************************/
+exports.getUserEmails = async (req, res) => {
+
+    const userIdList = [];
+    const tempUserIdList = req.body;
+
+    // Cast id strings as mongo ObjectId type
+    for (let i = 0; i < tempUserIdList.length; i++) {
+        userIdList.push(mongoose.Types.ObjectId(req.body[i]));
+    }
+
+    // console.log("UserId List: ", userIdList);
+
+    const response = await UserModel.find({_id: {$in: userIdList}});
+
+    if (response) {
+      let userArray = [];
+
+      for (let i = 0; i < response.length; i++) {
+          userArray.push({
+              _id: response[i]._id,
+              firstname: response[i].firstname,
+              email: response[i].email,
+          });
+      }
+      
+      res.send(userArray);
+    } else {
+      res.send({message: "There was an error retrieving the emails for the relevant users"});
+    }    
+}
+
 /*******************************************************************************************************************
  * Returns an array of object arrays pertaining to each of the groups the active user is a part of
  * 
@@ -186,7 +232,6 @@ exports.getUsers = async (req, res) => {
  * @return {array} resultDocument.groups -> returns the nested group documents that have been populated with the relevant group data
  * 
  *******************************************************************************************************************/
-
 exports.getUserGroups = async (req, res) => {
   console.log("get user groups is being called");
 
@@ -216,7 +261,6 @@ exports.getUserGroups = async (req, res) => {
  * @return {array} groupArrays -> information about the user account
  * 
  ***************************************************************************************************/
-
 exports.getGroupUsers = async (req, res) => {
     let extractColumn = (arr, column) => arr.map(x => x[column]);
 
@@ -256,7 +300,6 @@ exports.getGroupUsers = async (req, res) => {
  * @return {array} result -> information about the user account
  * 
  **************************************************************************************/
-
 exports.getUser = async (req, res) => {
   let result = await UserModel.findOne(req.body);
   
@@ -273,7 +316,6 @@ exports.getUser = async (req, res) => {
  * @return {array} leaderboard -> leaderboard data in the form of object array is sent back to requester
  * 
  ******************************************************************************************************************/
-
 exports.userLeaderboard = async (req, res) => {
   try {
     let users = await UserModel.aggregate([
@@ -324,7 +366,6 @@ exports.userLeaderboard = async (req, res) => {
  * @return {array} partyDetection an array of user emails, the active user should join a party with
  * 
  ******************************************************************************************************************/
-
 exports.partyDetection = async (req, res) => {
   const userId = mongoose.Types.ObjectId(req.body._id);
 
@@ -377,7 +418,6 @@ exports.partyDetection = async (req, res) => {
  * @return {string} success status message sent back to requester
  * 
  **********************************************************************************************************/
-
 exports.createUserActivity = async (req, res) => {
   const userId = req.body.userId;
   const action = req.body.action;
@@ -408,7 +448,6 @@ exports.createUserActivity = async (req, res) => {
  * @return {array} userActivity array of the userActivity details
  * 
  *************************************************************************************************************/
-
 exports.getUserActivity = async (req, res) => {
   const userId = req.body._id;
   const user = await UserModel.findOne({ _id: userId });
