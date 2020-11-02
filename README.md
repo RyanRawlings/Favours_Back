@@ -59,12 +59,11 @@ upgrade_s3 is currently unused but represents a more secure way of handling the 
 Need to create a .env file with the same structure as .env_sample file, the main concern is the BUCKET_NAME, multer requires a bucket value to be passed otherwise the application will crash and will not compile
 
 ## Configuration
-This project has no modifiable settings. There is no configuration, once the user has created an account
-their account will remain unchanged.
+This project has no modifiable settings.
 
 ## Git Commenting
 Git comments should utilise an imperative mood in the subject line
-i.e. (Please) -> Add styling to the Favour widget
+i.e. (Please) -> Add route to handle deletion of Favours
 
 ## Group Members
 * Student Name | Student Number
