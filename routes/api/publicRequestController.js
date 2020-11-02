@@ -1,16 +1,9 @@
-const express = require("express");
 const UserModel = require("../../models/User.js");
 const PublicRequestsModel = require("../../models/PublicRequest");
 const FavourModel = require("../../models/Favour.js");
 const mongoose = require("mongoose");
 
 require("dotenv/config");
-
-//Connection URL
-const url = process.env.DB_CONNECTION;
-
-//Database Name
-const dbName = "Favours";
 
 //Respond format
 const responseJSON = function(res, ret) {

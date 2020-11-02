@@ -1,17 +1,10 @@
-const express = require("express");
 const mongoose = require("mongoose");
 const FavourModel = require("../../models/Favour.js");
 const FavourTypeModel = require("../../models/FavourType");
 const PublicRequestsModel = require("../../models/PublicRequest");
 require("dotenv/config");
 
-//Connection URL
-const url = process.env.DB_CONNECTION;
-
-//Database Name
-const dbName = "Favours";
-
-//Respond format
+// Respond format
 const responseJSON = function(res, ret) {
   if (typeof ret === "undefined") {
     res.json({
@@ -29,7 +22,6 @@ const responseJSON = function(res, ret) {
  * @param email requestedBy, email owingUser, email owingUser, string requestTaskDescription
  * @return boolean true, string message
  *******************************************************/
-
 exports.createFavour = async (req, res) => {
  
   // Create Public Request
@@ -68,8 +60,6 @@ exports.createFavour = async (req, res) => {
      * @param void
      * @return array object favour
      *******************************************************/
-
-
     exports.getFavours = async (req, res) => {
       
       const userId = req.body.userId;
@@ -124,8 +114,6 @@ exports.createFavour = async (req, res) => {
  * @param int _id
  * @return bool - if true
  *******************************************************/
-
-
 exports.storeImageData = async (req, res) => {
   
   try {
@@ -206,7 +194,6 @@ exports.storeImageData = async (req, res) => {
  * @param int _id
  * @return response , string message
  *******************************************************/
-
 exports.forgiveDebt = async (req, res) => {
   try {
     let filter = { _id: mongoose.Types.ObjectId(req.body._id) };
@@ -218,7 +205,6 @@ exports.forgiveDebt = async (req, res) => {
     responseJSON(res, { message: error });
   }
 };
-
 
 /*******************************************************
  * Deleting favour
@@ -249,7 +235,6 @@ exports.deleteFavour = async (req, res) => {
  * @param void
  * @return array object favourType
  *******************************************************/
-
 exports.getFavourType = async (req, res) => {
   try {
     const response = await FavourTypeModel.find({});

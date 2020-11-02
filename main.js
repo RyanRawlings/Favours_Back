@@ -33,9 +33,6 @@ mongoose.connect(process.env.DB_CONNECTION, {
 // API Routes controller
 var indexRouter = require("./routes/index");
 
-
-
-
 app.use("/", indexRouter);
 
 app.listen(port, () => console.log(`API running on http://localhost:${port}`));

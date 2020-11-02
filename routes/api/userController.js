@@ -1,7 +1,4 @@
-const fs = require('fs');
-const express = require("express");
 const UserModel = require("../../models/User.js");
-const UserGroupModel = require("../../models/UserGroup.js");
 const UserActivityModel = require("../../models/UserActivity.js");
 const FavourModel = require("../../models/Favour.js");
 const bcrypt = require("bcryptjs");
@@ -9,15 +6,7 @@ const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../../validation");
 const sortObjectsArray = require('sort-objects-array');
 const mongoose = require("mongoose");
-const { graphqlHTTP } = require('express-graphql');
-const { buildSchema } = require('graphql');
 require("dotenv/config");
-
-//Connection URL
-const url = process.env.DB_CONNECTION;
-
-//Database Name
-const dbName = "Favours";
 
 //Respond format
 const responseJSON = function(res, ret) {

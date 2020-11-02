@@ -1,8 +1,9 @@
 const nodemailer = require('nodemailer');
 
-
 /*******************************************************
- * Send welcome email
+ * Send welcome email -> Currently unused by the
+ * application, could not connect it the services
+ * 
  * @desc send email to the user email 
  * @param user email
  * @return void
